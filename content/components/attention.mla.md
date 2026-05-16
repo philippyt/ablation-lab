@@ -1,0 +1,20 @@
+---
+id: attention.mla
+level: component
+title: Multi-head Latent Attention (MLA)
+short: Compress K and V into a low-rank latent, decompress only when needed.
+related_concepts: [kv_cache, memory_bound_inference]
+sources:
+  - "DeepSeek-AI, DeepSeek-V2 Technical Report (2024)"
+  - "DeepSeek-V3 (2024), Kimi K2 (Moonshot, 2024)"
+---
+
+Instead of caching full K and V tensors per head, MLA caches a single shared low-rank latent `c_KV ∈ R^{r}` per token, with `r` much smaller than `n_heads * head_dim`. K and V are reconstructed on the fly via two up-projection matrices:
+
+`K = W_UK · c_KV,  V = W_UV · c_KV`
+
+DeepSeek-V2 reports the KV cache becoming ~93% smaller than MHA at matched modelling capacity. The trick that makes it work without a quality hit is decoupling the RoPE-rotated part of Q/K from the compressed latent: a small set of "rope" head dimensions sit outside the latent compression so the relative-position property is preserved.
+
+Parameter count: more matrices (down-project plus two up-projects) but the cached state per token is small.
+
+**Why it matters:** MLA is the most aggressive KV-cache compression shipping in a frontier-class open model. DeepSeek-V2 and V3 use it; Kimi K2 picked it up too. It is harder to implement than GQA but the KV-cache shrink is dramatic. In this lab MLA is not yet implemented; the explainer is here so you know what the cost-panel KV row looks like under MLA: substantially smaller than MHA, smaller than GQA, in exchange for two extra matmuls per token to decompress.

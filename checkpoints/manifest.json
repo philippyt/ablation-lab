@@ -1,0 +1,35 @@
+{
+  "entries": {
+    "1436f3cf0995": {
+      "arch_config": {
+        "activation": "silu",
+        "attention_type": "standard",
+        "ctx": 128,
+        "d_model": 128,
+        "enable_attention": true,
+        "enable_ffn": true,
+        "enable_norms": true,
+        "ffn": "dense",
+        "ffn_mult": 4,
+        "head_dim": 16,
+        "n_experts": 4,
+        "n_heads": 8,
+        "n_kv_heads": 8,
+        "n_layers": 4,
+        "norm": "layernorm",
+        "pos_embed": "rope",
+        "qk_norm": false,
+        "tie_embeddings": true,
+        "top_k": 1,
+        "vocab_size": 72
+      },
+      "attention_kind": "mha",
+      "hash": "1436f3cf0995",
+      "name": "Baseline",
+      "path": "checkpoints/1436f3cf0995.pt",
+      "trained_at": 1778969215,
+      "val_loss": 0.9650801107287407
+    }
+  },
+  "updated_at": 1778969215
+}

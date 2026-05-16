@@ -1,0 +1,26 @@
+__pycache__/
+*.pyc
+.venv/
+.uv-cache/
+*.egg-info/
+dist/
+build/
+
+# Checkpoints: don't commit weights; do commit the manifest.
+checkpoints/*.pt
+checkpoints/*.tmp
+checkpoints/.lock
+
+# Frontend
+node_modules/
+frontend/dist/
+.vite/
+
+# Generated content index
+content/index.json
+
+# Editor / OS
+.DS_Store
+.idea/
+.vscode/
+*.swp
