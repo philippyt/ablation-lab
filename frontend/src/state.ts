@@ -1,5 +1,5 @@
 import { signal, computed } from "@preact/signals";
-import type { ArchConfig, CostPanel, ManifestEntry } from "./types";
+import type { ArchConfig, CostPanel, ManifestEntry, Instrumentation } from "./types";
 import { costPanel } from "./lib/costs";
 import { archHash } from "./lib/hash";
 import { PRESETS, type Preset } from "./lib/presets";
@@ -47,6 +47,7 @@ export const previousConfig = signal<ArchConfig | null>(null);
 export const generating = signal<boolean>(false);
 export const lastError = signal<string | null>(null);
 export const lastConsequences = signal<Array<{ id: string; text: string }>>([]);
+export const instrumentation = signal<Instrumentation | null>(null);
 
 export interface CacheStateView {
   positions: number;

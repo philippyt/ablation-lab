@@ -25,7 +25,7 @@ async def post_generate(req: GenerateIn) -> EventSourceResponse:
         raise HTTPException(
             status_code=404,
             detail={
-                "error": "no_faithful_checkpoint",
+                "error": "no_matching_checkpoint",
                 "message": "No trained checkpoint within Hamming ≤ 2 on Kind-A axes. Cost panel still shown.",
                 "differing_fields": resolution["differing_fields"],
                 "distance": resolution["distance"],
@@ -40,6 +40,7 @@ async def post_generate(req: GenerateIn) -> EventSourceResponse:
             max_tokens=req.max_tokens,
             temperature=req.temperature,
             top_k=req.top_k,
+            instrument=req.instrument,
         ):
             event = ev.pop("event")
             yield {"event": event, "data": json.dumps(ev)}

@@ -3,9 +3,6 @@ id: memory_bound_inference
 level: concept
 title: Why Decode Is Memory Bound
 short: At batch=1 each step reads the full model and writes one token. Bandwidth is the limit, not FLOPs.
-sources:
-  - "Pope et al., Efficiently Scaling Transformer Inference (2022)"
-  - "Roofline model (Williams, Waterman, Patterson, 2009)"
 ---
 
 A single decode step does ~`2 · total_params` floating-point operations: one MAC per parameter, doubled for the multiply and the add. It reads `total_params · dtype_bytes` from HBM (the full weight tensor) plus `kv_cache_bytes_so_far` (cached K and V across all layers). It writes one token's worth of activations.

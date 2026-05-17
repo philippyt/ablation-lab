@@ -4,9 +4,6 @@ level: component
 title: Tied vs Untied Embeddings
 short: Reuse the token-embedding matrix as the LM-head weights, or use a separate one.
 related_concepts: []
-sources:
-  - "Press, Wolf, Using the Output Embedding to Improve Language Models (2017)"
-  - "Tied: Llama 1, Gemma. Untied: GPT-2 and GPT-3, Llama 3.1 405B"
 ---
 
 The LM head is a linear projection from `d_model` back to `vocab_size`. There are two choices:

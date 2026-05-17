@@ -4,12 +4,6 @@ level: component
 title: Grouped-Query Attention (GQA)
 short: Query heads grouped. Each group shares one K and one V projection.
 related_concepts: [kv_cache, memory_bound_inference]
-sources:
-  - "Ainslie et al., GQA: Training Generalized Multi-Query Transformer Models from Multi-Head Checkpoints (2023)"
-  - "Llama 2 70B, Llama 3 (8B/70B), Llama 3.1 (Meta)"
-  - "Mistral 7B, Mixtral 8x7B (Mistral)"
-  - "Qwen 2, Qwen 2.5 (Alibaba)"
-  - "Gemma 2 (Google)"
 ---
 
 A compromise between MHA (no sharing) and MQA (full sharing). There are still `n_heads` query heads, but only `n_kv_heads` K and V heads, with `n_heads / n_kv_heads` queries sharing each K, V pair. At forward time the K and V tensors are repeated to match the Q heads via `repeat_interleave`.

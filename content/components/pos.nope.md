@@ -4,10 +4,6 @@ level: component
 title: NoPE (No Positional Encoding)
 short: Use no explicit position information. The causal mask carries it.
 related_concepts: []
-sources:
-  - "Haviv et al., Transformer Language Models without Positional Encodings Still Learn Positional Information (2022)"
-  - "Kazemnejad et al., The Impact of Positional Encoding on Length Generalization (2023)"
-  - "Some Phi-3 small-model experiments, ablations in OLMo and similar"
 ---
 
 Decoder-only transformers can learn to encode position implicitly through the causal attention mask. A token at position 0 attends only to itself. Position 1 attends to two tokens. Position 2 attends to three, and so on. The varying attention pattern is enough signal for the model to figure out where each token sits.

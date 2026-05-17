@@ -30,7 +30,7 @@ def main() -> None:
     model.eval()
     print(f"hash={args.hash} attn={cfg.attention_kind} norm={cfg.norm} ffn={cfg.ffn} val_loss={ckpt['final_val_loss']:.4f} device={device}")
     print()
-    print("=== faithful (all sublayers ON) ===")
+    print("=== baseline (all sublayers ON) ===")
     torch.manual_seed(42)
     print(sample(model, tokenizer, args.prompt, args.n, runtime=None, device=device))
     print()

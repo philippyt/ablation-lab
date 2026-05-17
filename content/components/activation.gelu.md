@@ -4,11 +4,6 @@ level: component
 title: GELU
 short: x · Φ(x). A smooth, ReLU-like activation. Popular before SwiGLU.
 related_concepts: []
-sources:
-  - "Hendrycks, Gimpel, Gaussian Error Linear Units (2016)"
-  - "BERT (Devlin et al., 2019)"
-  - "GPT-2, GPT-3 (Radford et al., 2019/2020)"
-  - "T5 1.1 uses GeGLU (a GLU layer with a GELU gate)"
 ---
 
 GELU is `x · Φ(x)` where `Φ` is the Gaussian CDF. It is often approximated as:

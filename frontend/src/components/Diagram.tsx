@@ -60,7 +60,7 @@ export function Diagram() {
     return cx;
   };
 
-  pushBox("Token", `vocab ${cfg.vocab_size}`, FIXED, "misc.tied_embeddings");
+  pushBox("Token", `vocab ${cfg.vocab_size}`, FIXED, "misc.token_embedding");
   pushBox(posShort, cfg.pos_embed === "absolute" ? `${cfg.ctx}×${cfg.d_model}` : "position", SWAP, `pos.${cfg.pos_embed}`);
 
   const blockStart = x;

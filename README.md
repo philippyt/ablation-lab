@@ -1,7 +1,7 @@
 # Ablation Lab
 Playground for breaking transformers on purpose.
 
-You compose an architecture (norm, attention paradigm, FFN shape, activation, positional scheme, ablation toggles) and the tool does two things in parallel. It computes the exact parameter, KV cache, memory, and roofline cost of the architecture from formulas. It also resolves the architecture to a real trained checkpoint, runs inference, and streams characters back. When the architecture matches a trained shape the output is faithful. When you toggle inference-time interventions (turn attention off, swap RoPE for ALiBi, zero the absolute position table) the output degrades in a way that maps directly to what was disabled. The degraded output is the whole point.
+You compose an architecture (norm, attention paradigm, FFN shape, activation, positional scheme, ablation toggles) and the tool does two things in parallel. It computes the exact parameter, KV cache, memory, and decode cost of the architecture from formulas. It also resolves the architecture to a real trained checkpoint, runs inference, and streams characters back. When the architecture matches a trained shape the output is real text from those trained weights. When you toggle inference-time interventions (turn attention off, swap RoPE for ALiBi, zero the absolute position table) the output degrades in a way that maps directly to what was disabled. The degraded output is the whole point.
 
 The trained model is intentionally tiny: d_model=128, n_layers=4, n_heads=8, head_dim=16, ctx=256, char-level vocab of 72, trained on roughly 1MB of TinyStories. The architectural question is what changes when you swap a component. The scale would only obscure it.
 
@@ -43,8 +43,8 @@ The resolver at `/api/resolve`:
 
 | State | Trigger | Output |
 |---|---|---|
-| green | Exact hash match in manifest | Faithful inference. Cost panel exact. |
-| green + Kind-B live | Exact hash match, plus Kind-B knob set | Faithful in the Kind-A sense. The degraded output is the lesson, not a crash. |
+| green | Exact hash match in manifest | Real inference. Cost panel exact. |
+| green + Kind-B live | Exact hash match, plus Kind-B knob set | Real at the architecture level. The degraded output is the lesson, not a crash. |
 | amber | No exact match. Nearest entry within Hamming distance 2 over Kind-A axes | Approximate inference with the nearest checkpoint. State pill lists which axes differ. Cost panel still exact. |
 | red | No entry within Hamming distance 2 | No fake sample. Cost panel still exact. |
 

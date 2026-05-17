@@ -4,9 +4,6 @@ level: component
 title: Sinusoidal Position Embeddings
 short: Fixed sine/cosine pattern added to token embeddings.
 related_concepts: []
-sources:
-  - "Vaswani et al., Attention Is All You Need (2017)"
-  - "Original transformer encoder/decoder, T5 (early)"
 ---
 
 The original transformer's position scheme. Each position gets a fixed vector of paired sines and cosines at geometric frequencies:

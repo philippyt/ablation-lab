@@ -4,10 +4,6 @@ level: component
 title: ALiBi (Attention with Linear Biases)
 short: Add a fixed per-head linear bias to attention scores. No learned params.
 related_concepts: []
-sources:
-  - "Press, Smith, Lewis, Train Short, Test Long: ALiBi (2022)"
-  - "BLOOM (BigScience, 2022), MPT 7B/30B (MosaicML)"
-  - "Falcon-Mamba uses ALiBi-style biases"
 ---
 
 Instead of modifying Q/K, ALiBi adds a static, position-dependent bias to the attention logits before the softmax:

@@ -4,11 +4,6 @@ level: component
 title: QK-Norm
 short: Apply LayerNorm or RMSNorm to Q and K just before the attention dot product.
 related_concepts: []
-sources:
-  - "Henry et al., Query-Key Normalization for Transformers (2020)"
-  - "Dehghani et al., Scaling Vision Transformers to 22B Parameters (2023)"
-  - "OLMo 2 (AI2, 2024) uses QK-norm"
-  - "Some Phi-3 / Phi-4 variants"
 ---
 
 Before computing `Q · K^T / sqrt(d_h)`, normalize Q and K along the head dimension:

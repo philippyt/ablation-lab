@@ -4,9 +4,6 @@ level: component
 title: Multi-head Latent Attention (MLA)
 short: Compress K and V into a low-rank latent, decompress only when needed.
 related_concepts: [kv_cache, memory_bound_inference]
-sources:
-  - "DeepSeek-AI, DeepSeek-V2 Technical Report (2024)"
-  - "DeepSeek-V3 (2024), Kimi K2 (Moonshot, 2024)"
 ---
 
 Instead of caching full K and V tensors per head, MLA caches a single shared low-rank latent `c_KV ∈ R^{r}` per token, with `r` much smaller than `n_heads * head_dim`. K and V are reconstructed on the fly via two up-projection matrices:

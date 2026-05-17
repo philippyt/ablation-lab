@@ -54,4 +54,22 @@ export interface GenerateRequest {
   max_tokens: number;
   temperature: number;
   top_k?: number;
+  instrument?: boolean;
+}
+
+export interface Instrumentation {
+  moe_active: boolean;
+  attention_active: boolean;
+  attention_instrumented: boolean;
+  norms_active: boolean;
+  n_layers: number;
+  n_experts: number;
+  top_k: number;
+  routing_counts: number[][];
+  routing_totals: number[];
+  attn_entropy_mean: (number | null)[];
+  attn_max_entropy: number[];
+  residual_norm_mean: (number | null)[];
+  token_surprises: number[];
+  token_strings: string[];
 }

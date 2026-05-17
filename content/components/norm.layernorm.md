@@ -4,11 +4,6 @@ level: component
 title: LayerNorm
 short: Center to zero mean, rescale to unit variance, then learn an affine.
 related_concepts: []
-sources:
-  - "Ba, Kiros, Hinton, Layer Normalization (2016)"
-  - "Original Transformer (Vaswani et al., 2017)"
-  - "GPT-2, GPT-3 (Radford et al.)"
-  - "BERT (Devlin et al., 2019)"
 ---
 
 For each token's hidden vector `x ∈ R^d`, LayerNorm computes:

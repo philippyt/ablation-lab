@@ -3,9 +3,6 @@ id: kv_cache
 level: concept
 title: KV Cache
 short: What gets stored per past position so the next decode step does not redo work.
-sources:
-  - "Shazeer, Fast Transformer Decoding (2019)"
-  - "Standard component of every decoder-only LM at inference"
 ---
 
 At every layer, the attention sublayer computes a Query, Key, and Value for each token. To score the current query against all previous tokens, the past K and V tensors must be available. Recomputing them on every step is wasteful; storing them once and reusing them turns each decode step into O(T) per layer instead of O(T²).

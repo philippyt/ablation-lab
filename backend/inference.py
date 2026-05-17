@@ -1,13 +1,16 @@
 from __future__ import annotations
 import asyncio
 import threading
+import time
 from collections import OrderedDict
 from typing import AsyncIterator
 import torch
+import torch.nn.functional as F
 from ablation.checkpoints import load_checkpoint
 from ablation.config import ArchConfig, arch_config_from_dict, arch_hash
 from ablation.model import TinyTransformer
 from ablation.tokenizer import CharTokenizer
+from backend.instrumentation import Instrumenter
 
 _LRU_MAX = 3
 _lru: "OrderedDict[str, tuple[TinyTransformer, CharTokenizer, ArchConfig, float]]" = OrderedDict()
@@ -68,7 +71,42 @@ def _build_runtime_overrides(requested_cfg: ArchConfig, trained_cfg: ArchConfig)
         runtime["pos_embed"] = tp
     return runtime
 
-async def stream_generate(*, requested_config: ArchConfig, resolution: dict, prompt: str, max_tokens: int, temperature: float, top_k: int | None) -> AsyncIterator[dict]:
+def _instrumented_generate(model, idx, max_new_tokens, temperature, top_k, runtime, instrumenter, tokenizer, stop_flag):
+    model.eval()
+    cfg = model.cfg
+    kv_caches = [{} for _ in range(cfg.n_layers)]
+    prompt = idx[:, -cfg.ctx:]
+    with torch.no_grad():
+        logits, _ = model.forward(prompt, kv_caches=kv_caches, runtime=runtime)
+    last_logits = logits[:, -1, :]
+    cur_len = prompt.size(1)
+    eff_pos = (runtime or {}).get("pos_embed", cfg.pos_embed)
+    absolute_pos_active = (eff_pos == "absolute") and (model.abs_pos is not None)
+    for _ in range(max_new_tokens):
+        if stop_flag.is_set():
+            return
+        if absolute_pos_active and cur_len >= cfg.ctx:
+            return
+        with torch.no_grad():
+            if temperature > 0:
+                scaled = last_logits / max(temperature, 1e-8)
+                if top_k is not None:
+                    v, _ = scaled.topk(min(top_k, scaled.size(-1)))
+                    scaled = scaled.masked_fill(scaled < v[:, [-1]], float("-inf"))
+                probs = F.softmax(scaled, dim=-1)
+                next_tok = torch.multinomial(probs, num_samples=1)
+            else:
+                next_tok = last_logits.argmax(dim=-1, keepdim=True)
+        tok_id = int(next_tok.item())
+        if instrumenter is not None:
+            instrumenter.record_token(last_logits, tok_id, tokenizer.decode([tok_id]))
+        yield tok_id
+        cur_len += 1
+        with torch.no_grad():
+            logits, _ = model.forward(next_tok, kv_caches=kv_caches, runtime=runtime)
+        last_logits = logits[:, -1, :]
+
+async def stream_generate(*, requested_config: ArchConfig, resolution: dict, prompt: str, max_tokens: int, temperature: float, top_k: int | None, instrument: bool = False) -> AsyncIterator[dict]:
     h = resolution["hash"]
     model, tokenizer, cfg, val_loss = load_for_hash(h)
     device = next(model.parameters()).device
@@ -94,10 +132,15 @@ async def stream_generate(*, requested_config: ArchConfig, resolution: dict, pro
     SENTINEL = object()
     stop_flag = threading.Event()
 
+    instrumenter: Instrumenter | None = None
+    if instrument:
+        instrumenter = Instrumenter(model)
+        instrumenter.attach()
+
     def worker():
         try:
-            for tok in model.generate(
-                idx, max_new_tokens=max_tokens, temperature=temperature, top_k=top_k, runtime=runtime
+            for tok in _instrumented_generate(
+                model, idx, max_tokens, temperature, top_k, runtime, instrumenter, tokenizer, stop_flag,
             ):
                 if stop_flag.is_set():
                     break
@@ -107,6 +150,7 @@ async def stream_generate(*, requested_config: ArchConfig, resolution: dict, pro
         finally:
             asyncio.run_coroutine_threadsafe(queue.put(SENTINEL), loop)
 
+    t_start = time.time()
     threading.Thread(target=worker, daemon=True).start()
 
     generated = ""
@@ -117,6 +161,8 @@ async def stream_generate(*, requested_config: ArchConfig, resolution: dict, pro
         if item is SENTINEL:
             break
         if isinstance(item, tuple) and item[0] == "error":
+            if instrumenter is not None:
+                instrumenter.detach()
             yield {"event": "error", "message": item[1]}
             return
         text = tokenizer.decode([int(item)])
@@ -143,4 +189,18 @@ async def stream_generate(*, requested_config: ArchConfig, resolution: dict, pro
         else:
             stop_reason = "ctx_limit"
 
-    yield {"event": "done", "val_loss": val_loss, "hash": h, "stop_reason": stop_reason, "tokens": tokens_emitted}
+    snapshot: dict | None = None
+    if instrumenter is not None:
+        snapshot = instrumenter.snapshot()
+        instrumenter.detach()
+        yield {"event": "instr", **snapshot}
+
+    elapsed = time.time() - t_start
+    yield {
+        "event": "done",
+        "val_loss": val_loss,
+        "hash": h,
+        "stop_reason": stop_reason,
+        "tokens": tokens_emitted,
+        "elapsed_s": round(elapsed, 4),
+    }

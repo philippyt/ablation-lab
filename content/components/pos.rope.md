@@ -4,10 +4,6 @@ level: component
 title: Rotary Position Embedding (RoPE)
 short: Rotate Q and K by a position-dependent angle, no learned position params.
 related_concepts: [kv_cache]
-sources:
-  - "Su et al., RoFormer: Enhanced Transformer with Rotary Position Embedding (2021)"
-  - "Llama 1/2/3, Mistral, Mixtral, Qwen 2/2.5, Gemma, DeepSeek-V2/V3"
-  - "Llama 3 raised base from 10,000 to 500,000 for long context. Qwen uses 1,000,000"
 ---
 
 Treat each pair of channels in Q and K as a 2D point. Rotate that point by an angle `m · θ_i`, where `m` is the token position and `θ_i = base^(-2i / head_dim)` indexes the channel pair. The dot product Q·K then depends only on the *relative* offset between two positions, even though the rotation was applied with absolute positions.

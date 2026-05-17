@@ -4,12 +4,6 @@ level: component
 title: Mixture-of-Experts (MoE)
 short: N parallel FFNs. Each token routes through top-k of them.
 related_concepts: [active_vs_total_params]
-sources:
-  - "Shazeer et al., Outrageously Large Neural Networks: The Sparsely-Gated MoE Layer (2017)"
-  - "Switch Transformer (Fedus et al., 2021)"
-  - "Mixtral 8x7B / 8x22B (Mistral)"
-  - "DeepSeek-V2, DeepSeek-V3 (DeepSeek)"
-  - "Qwen 2 MoE, OLMoE (AI2)"
 ---
 
 Instead of one FFN, MoE has `n_experts` parallel "expert" FFNs and a small router. For each token:

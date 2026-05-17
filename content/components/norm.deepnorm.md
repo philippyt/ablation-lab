@@ -4,9 +4,6 @@ level: component
 title: DeepNorm (post-norm with α-scaled residual)
 short: Post-norm placement plus a tuned residual scale, for very deep nets.
 related_concepts: []
-sources:
-  - "Wang et al., DeepNet: Scaling Transformers to 1,000 Layers (2022)"
-  - "GLM-130B (Tsinghua, 2022)"
 ---
 
 A post-norm variant designed to make very deep transformers (1,000 layers or more) trainable. The residual update is rescaled by a depth-dependent constant `α`:

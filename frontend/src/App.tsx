@@ -9,6 +9,7 @@ import { Diagram } from "./components/Diagram";
 import { CostPanel, CostBasisHint } from "./components/CostPanel";
 import { RunPanel } from "./components/RunPanel";
 import { KVCacheState } from "./components/KVCacheState";
+import { InstrumentationPanels } from "./components/InstrumentationPanels";
 import { SidePanel, FloatingTooltip } from "./components/Explainer";
 import { PyTorchCodeModal, codeModalOpen } from "./components/PyTorchCode";
 import { AttentionGridModal } from "./components/AttentionGrid";
@@ -49,6 +50,7 @@ export function App() {
         <div class="bottom-row">
           <RunPanel />
           <KVCacheState />
+          <InstrumentationPanels />
         </div>
       </main>
 

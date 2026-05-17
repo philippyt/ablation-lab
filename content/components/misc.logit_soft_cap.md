@@ -4,9 +4,6 @@ level: component
 title: Logit Soft-Capping (Gemma 2)
 short: Squash logits through tanh at the end to bound their magnitude.
 related_concepts: []
-sources:
-  - "Gemma 2 (Google, 2024)"
-  - "Also applied to attention logits inside the block in Gemma 2"
 ---
 
 Before the final softmax over the vocabulary, Gemma 2 applies:

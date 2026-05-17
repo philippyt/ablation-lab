@@ -3,9 +3,6 @@ id: moe_total_vs_active
 level: concept
 title: Total vs Active Parameters (MoE)
 short: MoE decouples model capacity from per-token compute.
-sources:
-  - "Shazeer et al., Outrageously Large Neural Networks (2017)"
-  - "Mixtral 8x7B, DeepSeek-V3, OLMoE"
 ---
 
 For a dense FFN, every parameter participates in every forward pass:
@@ -20,4 +17,4 @@ Total params still include all `n_experts` experts. Mixtral 8x7B has 47B total, 
 
 The pitch: capacity (total params, which sets the upper bound on what the model can represent) grows independently of per-token compute (active params, which sets the per-token latency and FLOPs). The catch: experts need enough data to specialize, the router can collapse to a single expert if poorly trained, and load-balance loss or bias-update tricks are needed to keep expert utilization roughly equal.
 
-At small data scale (this lab's 1.1 MB corpus, for instance), the router collapses and the cost shape is faithful but the quality benefit does not materialize.
+At small data scale (this lab's 1.1 MB corpus, for instance), the router collapses and the cost shape is accurate but the quality benefit does not materialize.

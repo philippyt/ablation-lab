@@ -4,10 +4,6 @@ level: component
 title: SiLU / Swish (used inside SwiGLU)
 short: x · sigmoid(x). Smooth, non-monotonic, the gate in SwiGLU.
 related_concepts: []
-sources:
-  - "Hendrycks, Gimpel, Gaussian Error Linear Units (2016)"
-  - "Ramachandran et al., Searching for Activation Functions (2017)"
-  - "Llama, Mistral, Qwen, Gemma all use SiLU inside SwiGLU"
 ---
 
 SiLU (also called Swish) is:

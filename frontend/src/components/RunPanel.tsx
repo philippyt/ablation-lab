@@ -1,5 +1,5 @@
 import { useState } from "preact/hooks";
-import { config, generating, cacheState, resolution, kindBActive } from "../state";
+import { config, generating, cacheState, resolution, kindBActive, instrumentation } from "../state";
 import { streamGenerate } from "../api";
 import { HINTS } from "../lib/labels";
 import { HelpHint } from "./HelpHint";
@@ -22,6 +22,7 @@ export function RunPanel() {
     setStatus("streaming...");
     setStatusIsErr(false);
     generating.value = true;
+    instrumentation.value = null;
     cacheState.value = { positions: 0, status: "streaming", prompt_tokens: 0 };
     attnLabels.value = Array.from(prompt);
     const t0 = performance.now();
@@ -34,6 +35,7 @@ export function RunPanel() {
         prompt,
         max_tokens: maxTokens,
         temperature,
+        instrument: true,
       })) {
         if (ev.event === "start") {
           cacheState.value = {
@@ -60,6 +62,9 @@ export function RunPanel() {
           const stop = ev.stop_reason === "eos" ? "stopped at story end" : "hit max_tokens cap";
           setStatus(`${tokens} tok · ${tps.toFixed(1)} tok/s · ${dt.toFixed(2)}s · ${stop} · val_loss=${ev.val_loss.toFixed(3)}`);
           cacheState.value = { ...cacheState.value, status: "done" };
+        } else if (ev.event === "instr") {
+          const { event: _e, ...payload } = ev as any;
+          instrumentation.value = payload;
         } else if (ev.event === "error") {
           setStatus("error: " + ev.message);
           setStatusIsErr(true);
@@ -76,12 +81,12 @@ export function RunPanel() {
   return (
     <div class="panel">
       <div class="panel-head">
-        <button class="run-trigger" onClick={run} disabled={!runnable || generating.value} title={runnable ? "Run inference with the current configuration." : "No trained checkpoint within 2 axes. Cost is still exact, but no faithful sample can be produced."}>
+        <button class="run-trigger" onClick={run} disabled={!runnable || generating.value} title={runnable ? "Run inference with the current configuration." : "No trained checkpoint within 2 axes. Cost is still exact, but no real sample can be produced."}>
           {generating.value ? "running…" : "Run"}
         </button>
         <div class="run-state">
           {res.state === "green" && (
-            <span class="state-pill ok" title={`The trained checkpoint for this exact architecture is loaded. Hash ${res.resolvedEntry!.hash}, validation loss ${res.resolvedEntry!.val_loss.toFixed(3)}.${kbActive.length > 0 ? " Kind-B interventions are turned on at inference, so " + kbActive.map(s => s.replace("enable_", "")).join(", ") + " is disabled in the forward pass. The degraded output is a faithful ablation, not a bug." : ""}`}>
+            <span class="state-pill ok" title={`The trained checkpoint for this exact architecture is loaded. Hash ${res.resolvedEntry!.hash}, validation loss ${res.resolvedEntry!.val_loss.toFixed(3)}.${kbActive.length > 0 ? " Kind-B interventions are turned on at inference, so " + kbActive.map(s => s.replace("enable_", "")).join(", ") + " is disabled in the forward pass." : ""}`}>
               hash {res.resolvedEntry!.hash} · val={res.resolvedEntry!.val_loss.toFixed(3)}
               {kbActive.length > 0 && <span> · Kind-B: {kbActive.map(s => s.replace("enable_", "")).join(", ")}</span>}
             </span>

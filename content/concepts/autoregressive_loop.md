@@ -3,9 +3,6 @@ id: autoregressive_loop
 level: concept
 title: Autoregressive Decoding
 short: One forward pass per generated token, with the KV cache carrying the prefix.
-sources:
-  - "GPT, GPT-2 (Radford et al.)"
-  - "Standard inference loop for every decoder-only LM"
 ---
 
 The model defines `p(token_t | token_0, ..., token_{t-1})`. To sample a sequence of length N from a prompt of length P, the loop runs `(N - P)` forward passes:

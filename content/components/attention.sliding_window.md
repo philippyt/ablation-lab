@@ -4,11 +4,6 @@ level: component
 title: Sliding-Window Attention (SWA)
 short: Each token attends only to the last W tokens, not the full history.
 related_concepts: [kv_cache, memory_bound_inference]
-sources:
-  - "Beltagy et al., Longformer (2020)"
-  - "Mistral 7B (Jiang et al., 2023), Mistral SWA = 4096"
-  - "Gemma 2 alternates SWA and full-attention layers"
-  - "Phi-3-small uses blocksparse + SWA"
 ---
 
 Replace the full causal mask with a local one of width `W`: token at position `i` attends only to positions in `[i - W + 1, i]`. The attention pattern slides as you decode.

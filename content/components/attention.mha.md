@@ -4,10 +4,6 @@ level: component
 title: Multi-Head Attention (MHA)
 short: Each head holds its own Q, K, V projection. No sharing.
 related_concepts: [kv_cache]
-sources:
-  - "Vaswani et al., Attention Is All You Need (2017)"
-  - "GPT-2, GPT-3 (Radford et al.)"
-  - "Llama 1 7B/13B/65B (Touvron et al., 2023)"
 ---
 
 Standard transformer attention. With `n_heads = 8` and `head_dim = 16`, every head holds its own learned Q, K, V projection. That gives 8 separate K tensors and 8 separate V tensors per token, per layer.

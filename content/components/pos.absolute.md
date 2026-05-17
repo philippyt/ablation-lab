@@ -4,10 +4,6 @@ level: component
 title: Absolute Learned Position Embeddings
 short: Learn one vector per position, add it to the token embedding.
 related_concepts: []
-sources:
-  - "BERT (Devlin et al., 2019)"
-  - "GPT-2 / GPT-3 (Radford et al., 2019/2020)"
-  - "Original tabular transformer encoders"
 ---
 
 Allocate a learned embedding matrix of shape `(ctx, d_model)` and add `pos_embed[m]` to the token embedding at position `m`. The model figures out for itself what "being at position 7" should add to a token's representation.

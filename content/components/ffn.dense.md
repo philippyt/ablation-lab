@@ -4,10 +4,6 @@ level: component
 title: Dense FFN
 short: One feed-forward per block. Every parameter runs for every token.
 related_concepts: [active_vs_total_params]
-sources:
-  - "Vaswani et al., Attention Is All You Need (2017)"
-  - "Shazeer, GLU Variants Improve Transformer (2020)"
-  - "Llama 1/2/3 (Meta), Mistral, Qwen, Gemma"
 ---
 
 Each block has a feed-forward network after attention. The shape is gated:

@@ -4,11 +4,6 @@ level: component
 title: Multi-Query Attention (MQA)
 short: All Q heads share a single K and a single V projection.
 related_concepts: [kv_cache, memory_bound_inference]
-sources:
-  - "Shazeer, Fast Transformer Decoding: One Write-Head is All You Need (2019)"
-  - "PaLM (Chowdhery et al., 2022), PaLM 2"
-  - "Falcon 7B/40B (TII)"
-  - "Gemini Nano early variants"
 ---
 
 GQA pushed to the limit: `n_kv_heads = 1`. Every Q head reads from the same K and V projection.

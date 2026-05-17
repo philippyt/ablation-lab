@@ -4,9 +4,6 @@ level: component
 title: Embedding Scaling (Gemma style)
 short: Multiply token embeddings by sqrt(d_model) before the first block.
 related_concepts: []
-sources:
-  - "Vaswani et al., Attention Is All You Need (2017) introduced the original `sqrt(d)` scaling"
-  - "Gemma 1/2/3 (Google, 2024)"
 ---
 
 The token embedding matrix is initialized at `O(1/sqrt(d_model))` scale (Xavier-style). The first attention layer then sees inputs whose scale is much smaller than the residual-stream activations later in the network. Scaling embeddings by `sqrt(d_model)` brings the input scale in line.

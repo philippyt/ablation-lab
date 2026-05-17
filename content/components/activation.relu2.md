@@ -4,9 +4,6 @@ level: component
 title: ReLU² (Squared ReLU)
 short: ReLU(x)². Sparse and cheap. Favored for sparse MoE routers.
 related_concepts: []
-sources:
-  - "So et al., Primer: Searching for Efficient Transformers (2021)"
-  - "Used in some MoE experiments and follow-up activation studies"
 ---
 
 ReLU² is exactly what it sounds like:

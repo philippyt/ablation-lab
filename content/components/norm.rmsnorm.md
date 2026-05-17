@@ -4,12 +4,6 @@ level: component
 title: RMSNorm
 short: LayerNorm without the mean-subtraction or bias. Just a rescale.
 related_concepts: []
-sources:
-  - "Zhang, Sennrich, Root Mean Square Layer Normalization (2019)"
-  - "Llama 1/2/3 (Meta)"
-  - "Mistral, Mixtral (Mistral)"
-  - "Qwen 2, Qwen 2.5 (Alibaba)"
-  - "Gemma 1/2/3 (Google)"
 ---
 
 Strips the mean-subtraction and the bias from LayerNorm. The formula becomes:
