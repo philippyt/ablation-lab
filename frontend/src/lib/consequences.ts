@@ -9,6 +9,8 @@ interface Rule {
     metric?: string;
     direction?: "increase" | "decrease" | "any";
     min_relative_change?: number;
+    new_value_in?: Record<string, string[]>;
+    old_value_in?: Record<string, string[]>;
   };
   template: string;
 }
@@ -89,6 +91,20 @@ export function detectConsequences(
   const matches: ConsequenceMatch[] = [];
   for (const rule of RULES) {
     if (!rule.trigger.fields_changed.every((f) => changed.has(f))) continue;
+    if (rule.trigger.new_value_in) {
+      let ok = true;
+      for (const [k, allowed] of Object.entries(rule.trigger.new_value_in)) {
+        if (!allowed.includes(String((newCfg as any)[k]))) { ok = false; break; }
+      }
+      if (!ok) continue;
+    }
+    if (rule.trigger.old_value_in) {
+      let ok = true;
+      for (const [k, allowed] of Object.entries(rule.trigger.old_value_in)) {
+        if (!allowed.includes(String((oldCfg as any)[k]))) { ok = false; break; }
+      }
+      if (!ok) continue;
+    }
     if (rule.trigger.metric) {
       const oldV = (oldCost as any)[rule.trigger.metric] as number;
       const newV = (newCost as any)[rule.trigger.metric] as number;

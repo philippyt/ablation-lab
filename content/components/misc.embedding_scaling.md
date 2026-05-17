@@ -5,7 +5,7 @@ title: Embedding Scaling (Gemma style)
 short: Multiply token embeddings by sqrt(d_model) before the first block.
 related_concepts: []
 sources:
-  - "Vaswani et al., Attention Is All You Need (2017): original `sqrt(d)` scaling"
+  - "Vaswani et al., Attention Is All You Need (2017) introduced the original `sqrt(d)` scaling"
   - "Gemma 1/2/3 (Google, 2024)"
 ---
 
@@ -19,4 +19,4 @@ before adding any positional information.
 
 Parameter count: 0. Embedding scaling is a forward-pass multiplier, not a learned op.
 
-**Why it matters:** The original transformer paper specified `sqrt(d_model)` scaling for the same reason. Most modern Llama-lineage models drop it; Gemma kept it. In practice the difference is small and detectable mostly in early training dynamics. In this lab embedding scaling does not change cost-panel params; it is documented so that when you read a Gemma config and see the scaling factor in the forward, you know what it is and why.
+**Why it matters:** The original transformer paper specified `sqrt(d_model)` scaling for the same reason. Most modern Llama-lineage models drop it. Gemma kept it. In practice the difference is small and detectable mostly in early training dynamics. In this lab embedding scaling does not change cost-panel params. It is documented so that when you read a Gemma config and see the scaling factor in the forward pass, you know what it is and why.

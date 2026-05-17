@@ -58,9 +58,18 @@ def main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument("--config", required=True, help="Path to a JSON config file")
     parser.add_argument("--force", action="store_true", help="Retrain even if checkpoint already exists")
+    parser.add_argument("--steps", type=int, default=None, help="Override training steps (smoke test)")
+    parser.add_argument("--eval-interval", type=int, default=None, help="Override eval interval")
+    parser.add_argument("--seed", type=int, default=None, help="Override training seed")
     args = parser.parse_args()
 
     arch_raw, train_raw, name = load_config_file(args.config)
+    if args.steps is not None:
+        train_raw["steps"] = args.steps
+    if args.eval_interval is not None:
+        train_raw["eval_interval"] = args.eval_interval
+    if args.seed is not None:
+        train_raw["seed"] = args.seed
     train_cfg = train_config_from_dict(train_raw)
     seed_everything(train_cfg.seed)
     device = resolve_device(train_cfg.device)
@@ -134,6 +143,8 @@ def main() -> None:
         final_val_loss=final_val,
         training_log=log,
         name=name,
+        source_config=args.config,
+        seed=train_cfg.seed,
     )
     print(f"[train] saved checkpoints/{h}.pt  (manifest updated)")
 

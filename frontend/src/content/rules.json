@@ -1,5 +1,23 @@
 [
   {
+    "id": "pos_embed_kindb_swap",
+    "trigger": {
+      "fields_changed": ["pos_embed"],
+      "new_value_in": { "pos_embed": ["alibi", "sinusoidal", "nope"] },
+      "old_value_in": { "pos_embed": ["rope", "alibi", "sinusoidal", "nope"] }
+    },
+    "template": "pos_embed swapped from {old.pos_embed} to {new.pos_embed}. The trained checkpoint expects {old.pos_embed} positional info baked into Q and K. At inference the model is now seeing {new.pos_embed} instead, with the same trained weights underneath. This is a Kind-B intervention applied live (no retraining), so the output will degrade. The degradation is the architectural lesson, not a crash. Compare against the rope baseline at the same shape to see what those positional bits were actually doing for quality."
+  },
+  {
+    "id": "pos_embed_kindb_nope_abs",
+    "trigger": {
+      "fields_changed": ["pos_embed"],
+      "new_value_in": { "pos_embed": ["nope"] },
+      "old_value_in": { "pos_embed": ["absolute"] }
+    },
+    "template": "pos_embed swapped from absolute to nope. The trained absolute position table is zeroed at inference. The model loses every positional cue it learned. Output degrades. The degradation is the lesson."
+  },
+  {
     "id": "gqa_kv_reduction",
     "trigger": {
       "fields_changed": ["n_kv_heads"],
@@ -35,7 +53,7 @@
       "metric": "total_params",
       "direction": "decrease"
     },
-    "template": "FFN switched back to dense. Total and active params collapse onto a single SwiGLU stack ({params.old} to {params.new})."
+    "template": "FFN switched back to dense. Total and active params collapse onto a single FFN stack ({params.old} to {params.new})."
   },
   {
     "id": "norm_kind",
@@ -108,7 +126,7 @@
       "fields_changed": ["d_model"],
       "metric": "total_params"
     },
-    "template": "d_model changed from {old.d_model} to {new.d_model}. Attention QKVO scales quadratically with d_model, SwiGLU hidden scales linearly. Total params {params.old} to {params.new}."
+    "template": "d_model changed from {old.d_model} to {new.d_model}. Attention QKVO scales quadratically with d_model, FFN hidden scales linearly. Total params {params.old} to {params.new}."
   },
   {
     "id": "ablation_attn_off",

@@ -18,6 +18,7 @@ export function Presets() {
 
   return (
     <div class="presets-list">
+      <p class="preset-caption">Each preset applies the component choices of a real model (attention shape, norm, FFN, activation, positional scheme) to the lab's toy scale. The name refers to where the preset comes from. The trained model here is always tiny.</p>
       {PRESETS.map((p) => {
         const active = matches(cfg, p);
         return (

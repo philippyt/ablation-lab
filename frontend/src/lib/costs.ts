@@ -1,5 +1,54 @@
 import type { ArchConfig, CostPanel } from "../types";
 
+export interface GpuSpec {
+  id: string;
+  name: string;
+  fp16_tflops: number;
+  bandwidth_gbs: number;
+  memory_gb: number;
+}
+
+export const GPUS: GpuSpec[] = [
+  { id: "b200", name: "B200 192GB", fp16_tflops: 2250, bandwidth_gbs: 8000, memory_gb: 192 },
+  { id: "h200", name: "H200 141GB SXM", fp16_tflops: 989, bandwidth_gbs: 4800, memory_gb: 141 },
+  { id: "mi300x", name: "MI300X 192GB", fp16_tflops: 1307, bandwidth_gbs: 5300, memory_gb: 192 },
+  { id: "h100", name: "H100 80GB SXM", fp16_tflops: 989, bandwidth_gbs: 3350, memory_gb: 80 },
+  { id: "rtx5090", name: "RTX 5090 32GB", fp16_tflops: 209, bandwidth_gbs: 1792, memory_gb: 32 },
+  { id: "rtx4090", name: "RTX 4090 24GB", fp16_tflops: 165, bandwidth_gbs: 1008, memory_gb: 24 },
+  { id: "l40s", name: "L40S 48GB", fp16_tflops: 362, bandwidth_gbs: 864, memory_gb: 48 },
+  { id: "l4", name: "L4 24GB", fp16_tflops: 121, bandwidth_gbs: 300, memory_gb: 24 },
+];
+
+export function decodeMsPerToken(cfg: ArchConfig, gpu: GpuSpec, dtypeBytes = 2): number {
+  const weightsBytes = totalParams(cfg) * dtypeBytes;
+  const kvBytes = kvCacheFullCtx(cfg, dtypeBytes);
+  return ((weightsBytes + kvBytes) / (gpu.bandwidth_gbs * 1e9)) * 1000;
+}
+
+export function decodeTokPerSec(cfg: ArchConfig, gpu: GpuSpec, dtypeBytes = 2): number {
+  const ms = decodeMsPerToken(cfg, gpu, dtypeBytes);
+  return ms > 0 ? 1000 / ms : 0;
+}
+
+export function arithmeticIntensityDecode(cfg: ArchConfig, dtypeBytes = 2): number {
+  const flops = 2 * activeParamsPerToken(cfg);
+  const bytes = totalParams(cfg) * dtypeBytes + kvCacheFullCtx(cfg, dtypeBytes);
+  return bytes > 0 ? flops / bytes : 0;
+}
+
+export function ridgePointFlopsPerByte(gpu: GpuSpec): number {
+  return (gpu.fp16_tflops * 1e12) / (gpu.bandwidth_gbs * 1e9);
+}
+
+export function minGpuThatFits(cfg: ArchConfig, dtypeBytes = 2): GpuSpec | null {
+  const mem = approxMemoryBytes(cfg, dtypeBytes);
+  const sorted = [...GPUS].sort((a, b) => a.memory_gb - b.memory_gb);
+  for (const g of sorted) {
+    if (mem <= g.memory_gb * 1e9) return g;
+  }
+  return null;
+}
+
 function roundToMultiple(x: number, m: number): number {
   return Math.floor((Math.floor(x) + m - 1) / m) * m;
 }
@@ -38,11 +87,25 @@ export function flopsPerToken(cfg: ArchConfig): number {
 }
 
 function attnParams(cfg: ArchConfig): number {
+  if (cfg.attention_type === "mla") return attnParamsMla(cfg);
   const q = cfg.d_model * (cfg.n_heads * cfg.head_dim);
   const k = cfg.d_model * (cfg.n_kv_heads * cfg.head_dim);
   const v = cfg.d_model * (cfg.n_kv_heads * cfg.head_dim);
   const o = cfg.n_heads * cfg.head_dim * cfg.d_model;
   return q + k + v + o;
+}
+
+function attnParamsMla(cfg: ArchConfig): number {
+  const latent = mlaLatentDim(cfg);
+  const rope = mlaRopeDim(cfg);
+  const nope = cfg.head_dim - rope;
+  const q = cfg.d_model * (cfg.n_heads * cfg.head_dim);
+  const kvDown = cfg.d_model * latent;
+  const kRope = cfg.d_model * rope;
+  const kUp = latent * (cfg.n_heads * nope);
+  const vUp = latent * (cfg.n_heads * cfg.head_dim);
+  const o = (cfg.n_heads * cfg.head_dim) * cfg.d_model;
+  return q + kvDown + kRope + kUp + vUp + o;
 }
 
 function ffnParamsDense(cfg: ArchConfig): number {
@@ -79,7 +142,10 @@ function posParams(cfg: ArchConfig): number {
 
 function qkNormParams(cfg: ArchConfig): number {
   if (!cfg.qk_norm || !cfg.enable_attention) return 0;
-  return cfg.n_layers * ((cfg.n_heads * cfg.head_dim) + (cfg.n_kv_heads * cfg.head_dim));
+  const perLayer = cfg.attention_type === "mla"
+    ? 2 * cfg.n_heads * cfg.head_dim
+    : (cfg.n_heads * cfg.head_dim) + (cfg.n_kv_heads * cfg.head_dim);
+  return cfg.n_layers * perLayer;
 }
 
 export function totalParams(cfg: ArchConfig): number {

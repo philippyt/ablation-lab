@@ -74,11 +74,32 @@ ARCH_FIELDS: tuple[str, ...] = (
     "enable_attention", "enable_ffn", "enable_norms",
 )
 
+KIND_A_FIELDS: tuple[str, ...] = (
+    "vocab_size", "d_model", "n_layers", "n_heads", "n_kv_heads", "head_dim",
+    "ctx", "norm", "ffn", "ffn_mult", "n_experts", "top_k",
+    "pos_embed_kind_a", "activation", "qk_norm", "attention_type",
+)
+
+KIND_B_FIELDS: tuple[str, ...] = (
+    "enable_attention", "enable_ffn", "enable_norms",
+    "tie_embeddings", "pos_embed",
+)
+
+def _pos_embed_kind_a(pos_embed: str) -> str:
+    return "absolute" if pos_embed == "absolute" else "rope"
+
 def _hashable_dict(cfg: ArchConfig) -> dict[str, Any]:
-    d = {k: getattr(cfg, k) for k in ARCH_FIELDS}
+    d: dict[str, Any] = {}
+    for k in KIND_A_FIELDS:
+        if k == "pos_embed_kind_a":
+            d[k] = _pos_embed_kind_a(cfg.pos_embed)
+        else:
+            d[k] = getattr(cfg, k)
     if d["ffn"] != "moe":
         d.pop("n_experts")
         d.pop("top_k")
+    if d["attention_type"] == "mla":
+        d.pop("n_kv_heads")
     return d
 
 def arch_hash(cfg: ArchConfig) -> str:

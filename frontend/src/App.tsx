@@ -6,7 +6,7 @@ import { ConfigPicker } from "./components/ConfigPicker";
 import { Presets } from "./components/Presets";
 import { CollapsiblePanel } from "./components/CollapsiblePanel";
 import { Diagram } from "./components/Diagram";
-import { CostPanel } from "./components/CostPanel";
+import { CostPanel, CostBasisHint } from "./components/CostPanel";
 import { RunPanel } from "./components/RunPanel";
 import { KVCacheState } from "./components/KVCacheState";
 import { SidePanel, FloatingTooltip } from "./components/Explainer";
@@ -29,7 +29,7 @@ export function App() {
     <div class="app">
       <header>
         <h1>Ablation Lab</h1>
-        <span class="tagline">Build a transformer architecture, run real inference, and see how each choice changes cost and quality.</span>
+        <span class="tagline">Build a tiny transformer, ablate a part, watch it break.</span>
         <div class="header-right">
           <button class="theme-toggle" onClick={toggleDarkMode} title={darkMode.value ? "switch to light" : "switch to dark"}>
             {darkMode.value ? "☀" : "☾"}
@@ -59,13 +59,13 @@ export function App() {
       </main>
 
       <aside class="sidebar">
-        <CollapsiblePanel title="Presets">
+        <CollapsiblePanel title="Component presets">
           <Presets />
         </CollapsiblePanel>
         <CollapsiblePanel title="Components">
           <ConfigPicker />
         </CollapsiblePanel>
-        <CollapsiblePanel title="Cost">
+        <CollapsiblePanel title="Cost" action={<CostBasisHint />}>
           <CostPanel />
         </CollapsiblePanel>
       </aside>

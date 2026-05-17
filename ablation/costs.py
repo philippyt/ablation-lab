@@ -12,11 +12,25 @@ def _norm_params(cfg: ArchConfig) -> int:
     return cfg.d_model * (2 if cfg.norm == "layernorm" else 1)
 
 def _attn_params(cfg: ArchConfig) -> int:
+    if cfg.attention_type == "mla":
+        return _attn_params_mla(cfg)
     q = cfg.d_model * (cfg.n_heads * cfg.head_dim)
     k = cfg.d_model * (cfg.n_kv_heads * cfg.head_dim)
     v = cfg.d_model * (cfg.n_kv_heads * cfg.head_dim)
     o = (cfg.n_heads * cfg.head_dim) * cfg.d_model
     return q + k + v + o
+
+def _attn_params_mla(cfg: ArchConfig) -> int:
+    latent = _mla_latent_dim(cfg)
+    rope = _mla_rope_dim(cfg)
+    nope = cfg.head_dim - rope
+    q = cfg.d_model * (cfg.n_heads * cfg.head_dim)
+    kv_down = cfg.d_model * latent
+    k_rope = cfg.d_model * rope
+    k_up = latent * (cfg.n_heads * nope)
+    v_up = latent * (cfg.n_heads * cfg.head_dim)
+    o = (cfg.n_heads * cfg.head_dim) * cfg.d_model
+    return q + kv_down + k_rope + k_up + v_up + o
 
 def _ffn_params_dense(cfg: ArchConfig) -> int:
     h = swiglu_hidden(cfg)
@@ -52,7 +66,10 @@ def _pos_params(cfg: ArchConfig) -> int:
 def _qk_norm_params(cfg: ArchConfig) -> int:
     if not cfg.qk_norm:
         return 0
-    per_layer = (cfg.n_heads * cfg.head_dim) + (cfg.n_kv_heads * cfg.head_dim)
+    if cfg.attention_type == "mla":
+        per_layer = 2 * cfg.n_heads * cfg.head_dim
+    else:
+        per_layer = (cfg.n_heads * cfg.head_dim) + (cfg.n_kv_heads * cfg.head_dim)
     return cfg.n_layers * per_layer
 
 def total_params(cfg: ArchConfig) -> int:

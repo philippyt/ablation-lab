@@ -9,13 +9,20 @@ class ArchConfigIn(BaseModel):
     n_heads: int = 8
     n_kv_heads: int = 8
     head_dim: int = 16
-    ctx: int = 128
+    ctx: int = 256
     norm: Literal["layernorm", "rmsnorm"] = "layernorm"
     ffn: Literal["dense", "moe"] = "dense"
     ffn_mult: int = 4
     n_experts: int = 4
     top_k: int = 1
     tie_embeddings: bool = True
+    pos_embed: Literal["rope", "alibi", "absolute", "sinusoidal", "nope"] = "rope"
+    activation: Literal["silu", "gelu", "relu2"] = "silu"
+    qk_norm: bool = False
+    attention_type: Literal["standard", "mla"] = "standard"
+    enable_attention: bool = True
+    enable_ffn: bool = True
+    enable_norms: bool = True
 
 class CostPanelOut(BaseModel):
     total_params: int

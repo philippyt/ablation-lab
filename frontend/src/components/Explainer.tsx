@@ -1,5 +1,6 @@
 import { marked } from "marked";
 import DOMPurify from "dompurify";
+import { useEffect, useRef } from "preact/hooks";
 import { getExplainer } from "../content";
 import { openExplainerId } from "../state";
 
@@ -30,12 +31,34 @@ function handleBodyClick(e: MouseEvent) {
 
 export function SidePanel() {
   const id = openExplainerId.value;
+  const panelRef = useRef<HTMLElement | null>(null);
+
+  useEffect(() => {
+    if (!id) return;
+    function onDocClick(e: MouseEvent) {
+      const target = e.target as HTMLElement | null;
+      if (!target) return;
+      if (panelRef.current && panelRef.current.contains(target)) return;
+      if (target.closest("[data-explainer], .diagram-box, .help-hint, .tooltip, .help-hint-tooltip-fixed")) return;
+      openExplainerId.value = null;
+    }
+    function onEsc(e: KeyboardEvent) {
+      if (e.key === "Escape") openExplainerId.value = null;
+    }
+    document.addEventListener("mousedown", onDocClick);
+    document.addEventListener("keydown", onEsc);
+    return () => {
+      document.removeEventListener("mousedown", onDocClick);
+      document.removeEventListener("keydown", onEsc);
+    };
+  }, [id]);
+
   if (!id) return null;
   const ex = getExplainer(id);
   if (!ex) return null;
 
   return (
-    <aside class="sidepanel">
+    <aside class="sidepanel" ref={panelRef as any}>
       <button class="close" onClick={() => (openExplainerId.value = null)} aria-label="close">×</button>
       <div class="meta">{ex.level}</div>
       <h3>{ex.title}</h3>

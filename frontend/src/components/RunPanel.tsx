@@ -1,5 +1,5 @@
 import { useState } from "preact/hooks";
-import { config, generating, matchingEntry, cacheState } from "../state";
+import { config, generating, cacheState, resolution, kindBActive } from "../state";
 import { streamGenerate } from "../api";
 import { HINTS } from "../lib/labels";
 import { HelpHint } from "./HelpHint";
@@ -7,14 +7,15 @@ import { attnLabels } from "./AttentionGrid";
 
 export function RunPanel() {
   const [prompt, setPrompt] = useState("Once upon a time");
-  const [maxTokens, setMaxTokens] = useState(150);
+  const [maxTokens, setMaxTokens] = useState(300);
   const [temperature, setTemperature] = useState(0.8);
   const [output, setOutput] = useState("");
   const [status, setStatus] = useState<string | null>(null);
   const [statusIsErr, setStatusIsErr] = useState(false);
 
-  const entry = matchingEntry.value;
-  const runnable = entry !== null;
+  const res = resolution.value;
+  const kbActive = kindBActive.value;
+  const runnable = res.state !== "red";
 
   async function run() {
     setOutput(prompt);
@@ -56,7 +57,8 @@ export function RunPanel() {
         } else if (ev.event === "done") {
           const dt = (performance.now() - tStart) / 1000;
           const tps = dt > 0 ? tokens / dt : 0;
-          setStatus(`${tokens} tok · ${tps.toFixed(1)} tok/s · ${dt.toFixed(2)}s · val_loss=${ev.val_loss.toFixed(3)}`);
+          const stop = ev.stop_reason === "eos" ? "stopped at story end" : "hit max_tokens cap";
+          setStatus(`${tokens} tok · ${tps.toFixed(1)} tok/s · ${dt.toFixed(2)}s · ${stop} · val_loss=${ev.val_loss.toFixed(3)}`);
           cacheState.value = { ...cacheState.value, status: "done" };
         } else if (ev.event === "error") {
           setStatus("error: " + ev.message);
@@ -73,13 +75,31 @@ export function RunPanel() {
 
   return (
     <div class="panel">
-      <h2>Run</h2>
-      {runnable ? (
-        <div class="banner ok">checkpoint available · hash {entry!.hash} · val_loss={entry!.val_loss.toFixed(3)}</div>
-      ) : (
-        <div class="banner">no checkpoint for this architecture yet · pick a different combination or train it offline</div>
-      )}
-      <div class="row" style="margin-top:0.75rem;">
+      <div class="panel-head">
+        <button class="run-trigger" onClick={run} disabled={!runnable || generating.value} title={runnable ? "Run inference with the current configuration." : "No trained checkpoint within 2 axes. Cost is still exact, but no faithful sample can be produced."}>
+          {generating.value ? "running…" : "Run"}
+        </button>
+        <div class="run-state">
+          {res.state === "green" && (
+            <span class="state-pill ok" title={`The trained checkpoint for this exact architecture is loaded. Hash ${res.resolvedEntry!.hash}, validation loss ${res.resolvedEntry!.val_loss.toFixed(3)}.${kbActive.length > 0 ? " Kind-B interventions are turned on at inference, so " + kbActive.map(s => s.replace("enable_", "")).join(", ") + " is disabled in the forward pass. The degraded output is a faithful ablation, not a bug." : ""}`}>
+              hash {res.resolvedEntry!.hash} · val={res.resolvedEntry!.val_loss.toFixed(3)}
+              {kbActive.length > 0 && <span> · Kind-B: {kbActive.map(s => s.replace("enable_", "")).join(", ")}</span>}
+            </span>
+          )}
+          {res.state === "amber" && (
+            <span class="state-pill warn" title={`No trained checkpoint matches this configuration exactly. Running the closest one, which differs on ${res.distance} axis (${res.differingFields.join(", ")}). The output is approximate. The cost panel is still exact.`}>
+              approx · {res.distance} axis{res.distance === 1 ? "" : "es"} differ ({res.differingFields.join(", ")})
+              {kbActive.length > 0 && <span> · Kind-B: {kbActive.map(s => s.replace("enable_", "")).join(", ")}</span>}
+            </span>
+          )}
+          {res.state === "red" && (
+            <span class="state-pill err" title="No trained checkpoint is within 2 axes of this configuration, so we won't fake a sample. The cost panel is still exact. Pick a configuration closer to a trained one to see real output.">
+              no checkpoint within 2 axes
+            </span>
+          )}
+        </div>
+      </div>
+      <div class="row" style="margin-top:0.3rem;">
         <label>Prompt<HelpHint text={HINTS.prompt} /></label>
         <textarea value={prompt} onInput={(e) => setPrompt((e.target as HTMLTextAreaElement).value)} />
         <label>Max tokens<HelpHint text={HINTS.max_tokens} /></label>
@@ -89,9 +109,6 @@ export function RunPanel() {
         <input type="number" min={0} max={2} step={0.1} value={temperature}
                onInput={(e) => setTemperature(parseFloat((e.target as HTMLInputElement).value))} />
       </div>
-      <button onClick={run} disabled={!runnable || generating.value} style="margin-top:0.75rem;">
-        {generating.value ? "running..." : "Run"}
-      </button>
       <div class={`status ${statusIsErr ? "err" : ""}`}>{status}</div>
       <div class="output">{output}</div>
     </div>

@@ -10,7 +10,7 @@ sources:
   - "Llama 1 7B/13B/65B (Touvron et al., 2023)"
 ---
 
-Standard transformer attention. With `n_heads = 8` and `head_dim = 16`, every head holds its own learned Q, K, V projection, giving 8 separate K tensors and 8 separate V tensors per token, per layer.
+Standard transformer attention. With `n_heads = 8` and `head_dim = 16`, every head holds its own learned Q, K, V projection. That gives 8 separate K tensors and 8 separate V tensors per token, per layer.
 
 The [KV cache](concept:kv_cache) stores K and V for each past position so future tokens can attend without recomputing them. Its size grows linearly in `n_heads`:
 

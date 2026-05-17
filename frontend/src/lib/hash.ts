@@ -1,10 +1,9 @@
 import type { ArchConfig } from "../types";
 
-const ARCH_FIELDS = [
+const KIND_A_FIELDS = [
   "vocab_size", "d_model", "n_layers", "n_heads", "n_kv_heads", "head_dim",
-  "ctx", "norm", "ffn", "ffn_mult", "n_experts", "top_k", "tie_embeddings",
-  "pos_embed", "activation", "qk_norm", "attention_type",
-  "enable_attention", "enable_ffn", "enable_norms",
+  "ctx", "norm", "ffn", "ffn_mult", "n_experts", "top_k",
+  "activation", "qk_norm", "attention_type",
 ] as const;
 
 function canonicalJSON(obj: Record<string, unknown>): string {
@@ -13,12 +12,20 @@ function canonicalJSON(obj: Record<string, unknown>): string {
   return `{${pairs.join(",")}}`;
 }
 
+function posEmbedKindA(pos: string): string {
+  return pos === "absolute" ? "absolute" : "rope";
+}
+
 function hashableDict(cfg: ArchConfig): Record<string, unknown> {
   const d: Record<string, unknown> = {};
-  for (const k of ARCH_FIELDS) d[k] = cfg[k];
+  for (const k of KIND_A_FIELDS) d[k] = cfg[k];
+  d.pos_embed_kind_a = posEmbedKindA(cfg.pos_embed);
   if (d.ffn !== "moe") {
     delete d.n_experts;
     delete d.top_k;
+  }
+  if (d.attention_type === "mla") {
+    delete d.n_kv_heads;
   }
   return d;
 }

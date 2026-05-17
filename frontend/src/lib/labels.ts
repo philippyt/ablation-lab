@@ -1,24 +1,17 @@
 import type { ArchConfig } from "../types";
 
 export function ffnLabel(cfg: ArchConfig): string {
-  const variant = cfg.ffn === "moe" ? "MoE" : "Dense";
-  const gate = cfg.activation === "silu" ? "SwiGLU"
-    : cfg.activation === "gelu" ? "GeGLU"
-    : "ReGLU²";
   if (cfg.ffn === "moe") {
-    return `MoE · ${gate} experts · top-${cfg.top_k}/${cfg.n_experts}`;
+    return `MoE · top-${cfg.top_k}/${cfg.n_experts}`;
   }
-  return `${variant} ${gate}`;
+  return "Dense";
 }
 
 export function diagramFfnLabel(cfg: ArchConfig): { label: string; sub?: string } {
-  const gate = cfg.activation === "silu" ? "SwiGLU"
-    : cfg.activation === "gelu" ? "GeGLU"
-    : "ReGLU²";
   if (cfg.ffn === "moe") {
-    return { label: "MoE", sub: `${gate} ${cfg.top_k}/${cfg.n_experts}` };
+    return { label: "MoE", sub: `top-${cfg.top_k}/${cfg.n_experts}` };
   }
-  return { label: gate };
+  return { label: "Dense" };
 }
 
 export function activationDisplay(cfg: ArchConfig): string {
@@ -28,21 +21,21 @@ export function activationDisplay(cfg: ArchConfig): string {
 }
 
 export const HINTS: Record<string, string> = {
-  name: "Just a label for your model. No effect on the architecture.",
-  attention: "The shape of self-attention. MHA keeps a full K/V per head; GQA shares K/V across head groups; MQA shares one K/V across all heads. Smaller K/V count means smaller KV cache.",
-  position: "How the model knows the order of tokens. RoPE rotates Q and K by position; ALiBi adds a distance bias; absolute learns a vector per position; NoPE skips it entirely.",
-  norm: "Normalization applied before each sublayer. LayerNorm centers and rescales with learned scale + shift; RMSNorm drops the centering and the shift.",
-  qk_norm: "Normalize Q and K just before the dot product. Stabilizes attention logits at large widths. Used in OLMo 2 and ViT-22B.",
-  ffn: "The feed-forward block inside each transformer layer. Dense runs every parameter for every token; MoE routes each token to top-k of N expert FFNs.",
-  activation: "Nonlinearity inside the FFN. SiLU pairs with SwiGLU's gating; GELU was the de facto choice in BERT and GPT-2/3; ReLU² (squared ReLU) is sparser and cheaper.",
-  tied: "Whether the LM-head weights are the transposed token embedding (tied) or a separate matrix (untied). Tied saves vocab×d params.",
-  layers: "Number of transformer blocks stacked. Each block is one norm-attention-norm-FFN unit.",
-  d_model: "The hidden dimension of the residual stream. All projections inside a block flow through this width.",
-  ctx: "Maximum sequence length the model supports at inference. KV cache and absolute position embeddings scale with this.",
-  enable_attention: "Ablate attention entirely. Each block becomes Norm → FFN with a residual; the model loses any cross-token information mixing.",
-  enable_ffn: "Ablate the feed-forward sublayer. Each block is just attention plus residual. The model loses the per-token MLP capacity.",
-  enable_norms: "Ablate every normalization layer. Trains poorly at non-trivial depth; useful to see what norms cost (params) and to confirm they are not free.",
-  prompt: "Text fed to the model. Each character becomes one token (this is a char-level model).",
-  max_tokens: "Upper bound on how many new tokens to generate. Generation may stop earlier when the KV cache fills.",
-  temperature: "Softmax temperature applied to the next-token logits. 0 is greedy; higher values sample more diversely; values above ~1.5 typically produce noise.",
+  name: "Just a label for your model. Doesn't change the architecture.",
+  attention: "How the model shares Q, K, and V across attention heads. MHA gives every query head its own K and V. GQA groups several query heads to share one K and V pair. MQA shares a single K and V across all query heads. Fewer K and V means a smaller KV cache and faster decode.",
+  position: "How the model encodes word order. RoPE rotates Q and K based on each token's position. ALiBi adds a fixed distance penalty to attention scores. Absolute learns one vector per position. NoPE skips positional info entirely, which breaks word order.",
+  norm: "What normalization runs before each sublayer. LayerNorm subtracts the mean, divides by the standard deviation, and learns a scale and shift. RMSNorm skips the centering and the shift, keeping just the rescale.",
+  qk_norm: "Run a normalization on Q and K right before the attention dot product. Stabilizes attention scores at large model widths. OLMo 2 and ViT-22B use it.",
+  ffn: "The feed-forward block in each layer. Dense runs every weight for every token. MoE has N expert feed-forwards plus a router, and each token only goes through its top-k experts.",
+  activation: "The nonlinearity inside the gated feed-forward. SiLU is the modern default and is paired with SwiGLU. GELU was the BERT and GPT-2/3 choice. ReLU squared is sparser and a bit cheaper.",
+  tied: "Whether the output projection reuses the token embedding matrix (tied) or has its own weights (untied). Tied saves vocab times d_model parameters.",
+  layers: "How many transformer blocks are stacked. One block is norm, attention, norm, then feed-forward.",
+  d_model: "Width of the residual stream. Every projection inside a block flows through this dimension.",
+  ctx: "Longest sequence the model can handle. KV cache size and the absolute position table both scale with this.",
+  enable_attention: "Turn off the attention sublayer at inference. Each block becomes just norm and feed-forward with a residual. The model loses the ability to mix information across tokens, and output collapses fast.",
+  enable_ffn: "Turn off the feed-forward sublayer at inference. Each block becomes just attention with a residual. The model loses its per-token MLP capacity.",
+  enable_norms: "Turn off every normalization layer at inference. Activations propagate unscaled and output becomes noisy. Useful for seeing what norms actually do.",
+  prompt: "The text you feed the model. Each character is one token (this is a char-level model on TinyStories).",
+  max_tokens: "Safety cap on how many tokens the model can generate. Generation usually stops earlier when the model produces a story ending. Hitting the cap means the model rambled without finishing, which is its own diagnostic.",
+  temperature: "How random the sampling is. 0 picks the most likely token every time. Higher values sample more freely. Above 1.5 the output usually becomes noise.",
 };

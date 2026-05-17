@@ -14,16 +14,11 @@ export function KVCacheState() {
   const pct = ctx === 0 ? 0 : pos / ctx;
   const promptPct = ctx === 0 ? 0 : s.prompt_tokens / ctx;
 
-  const showStatus = s.status === "streaming";
-
   return (
     <div class="panel kv-state">
-      <h2>
-        KV cache state
-        {showStatus && <span class="kv-state-status" data-status={s.status}>streaming</span>}
-      </h2>
+      <h2>KV cache state</h2>
 
-      <div class="kv-bar" title="prompt fill (light) + generated fill (full)">
+      <div class="kv-bar" title="The light band shows how much of the cache the prompt fills. The full band shows the prompt plus every token generated so far.">
         {s.status !== "idle" && (
           <div class="kv-bar-prompt" style={{ width: `${promptPct * 100}%` }} />
         )}

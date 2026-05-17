@@ -57,6 +57,14 @@ export const hoverInfo = signal<HoverInfo | null>(null);
 const _theme = typeof localStorage !== "undefined" ? localStorage.getItem("ablation-theme") : null;
 export const darkMode = signal<boolean>(_theme === "dark");
 
+const _gpu = typeof localStorage !== "undefined" ? localStorage.getItem("ablation-gpu") : null;
+export const selectedGpu = signal<string>(_gpu ?? "h200");
+
+export function setSelectedGpu(id: string): void {
+  selectedGpu.value = id;
+  try { localStorage.setItem("ablation-gpu", id); } catch {}
+}
+
 export function toggleDarkMode(): void {
   darkMode.value = !darkMode.value;
   try {
@@ -70,6 +78,76 @@ export const currentHash = signal<string>("");
 export const matchingEntry = computed<ManifestEntry | null>(() => {
   const h = currentHash.value;
   return entries.value.find(e => e.hash === h) ?? null;
+});
+
+const KIND_A_STRUCT_FIELDS: (keyof ArchConfig)[] = ["vocab_size", "d_model", "n_layers", "n_heads", "head_dim", "ctx", "ffn_mult"];
+
+function posKindA(p: string): string { return p === "absolute" ? "absolute" : "rope"; }
+
+function kindADiff(req: ArchConfig, entryArch: ArchConfig): string[] {
+  const diffs: string[] = [];
+  for (const f of KIND_A_STRUCT_FIELDS) if (req[f] !== entryArch[f]) diffs.push(f);
+  if (req.norm !== entryArch.norm) diffs.push("norm");
+  if (req.attention_type !== entryArch.attention_type) {
+    diffs.push("attention_type");
+  } else if (req.attention_type !== "mla") {
+    if (req.n_kv_heads !== entryArch.n_kv_heads) diffs.push("n_kv_heads");
+  }
+  if (req.ffn !== entryArch.ffn) diffs.push("ffn");
+  else if (req.ffn === "moe") {
+    if (req.n_experts !== entryArch.n_experts) diffs.push("n_experts");
+    if (req.top_k !== entryArch.top_k) diffs.push("top_k");
+  }
+  if (req.activation !== entryArch.activation) diffs.push("activation");
+  if (Boolean(req.qk_norm) !== Boolean(entryArch.qk_norm)) diffs.push("qk_norm");
+  if (posKindA(req.pos_embed) !== posKindA(entryArch.pos_embed)) diffs.push("pos_embed");
+  return diffs;
+}
+
+export type ResolutionState = "green" | "amber" | "red";
+export interface Resolution {
+  state: ResolutionState;
+  resolvedEntry: ManifestEntry | null;
+  differingFields: string[];
+  distance: number;
+}
+
+export const resolution = computed<Resolution>(() => {
+  const cfg = config.value;
+  const all = entries.value;
+  const h = currentHash.value;
+  const exact = all.find(e => e.hash === h) ?? null;
+  if (exact) return { state: "green", resolvedEntry: exact, differingFields: [], distance: 0 };
+  let best: ManifestEntry | null = null;
+  let bestDiffs: string[] = [];
+  let bestDist = Infinity;
+  for (const e of all) {
+    const diffs = kindADiff(cfg, e.arch_config);
+    if (diffs.length < bestDist) {
+      bestDist = diffs.length;
+      best = e;
+      bestDiffs = diffs;
+    }
+  }
+  if (best === null || bestDist > 2) {
+    return { state: "red", resolvedEntry: null, differingFields: bestDiffs, distance: bestDist === Infinity ? -1 : bestDist };
+  }
+  return { state: "amber", resolvedEntry: best, differingFields: bestDiffs, distance: bestDist };
+});
+
+export const kindBActive = computed<string[]>(() => {
+  const c = config.value;
+  const res = resolution.value;
+  const a: string[] = [];
+  if (!c.enable_attention) a.push("enable_attention");
+  if (!c.enable_ffn) a.push("enable_ffn");
+  if (!c.enable_norms) a.push("enable_norms");
+  if (res.resolvedEntry) {
+    const trained = res.resolvedEntry.arch_config.pos_embed;
+    if (trained === "rope" && c.pos_embed !== "rope") a.push(`pos_embed=${c.pos_embed}`);
+    else if (trained === "absolute" && c.pos_embed === "nope") a.push("pos_embed=nope (abs zeroed)");
+  }
+  return a;
 });
 
 export async function updateConfig(patch: Partial<ArchConfig>): Promise<void> {

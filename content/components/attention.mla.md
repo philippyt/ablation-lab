@@ -13,8 +13,8 @@ Instead of caching full K and V tensors per head, MLA caches a single shared low
 
 `K = W_UK · c_KV,  V = W_UV · c_KV`
 
-DeepSeek-V2 reports the KV cache becoming ~93% smaller than MHA at matched modelling capacity. The trick that makes it work without a quality hit is decoupling the RoPE-rotated part of Q/K from the compressed latent: a small set of "rope" head dimensions sit outside the latent compression so the relative-position property is preserved.
+DeepSeek-V2 reports the KV cache becoming around 93% smaller than MHA at matched modelling capacity. The trick that makes it work without a quality hit is decoupling the RoPE-rotated part of Q and K from the compressed latent. A small set of "rope" head dimensions sit outside the latent compression so the relative-position property is preserved.
 
-Parameter count: more matrices (down-project plus two up-projects) but the cached state per token is small.
+Parameter count: more matrices than standard attention (one down-project plus two up-projects), but the cached state per token is small.
 
-**Why it matters:** MLA is the most aggressive KV-cache compression shipping in a frontier-class open model. DeepSeek-V2 and V3 use it; Kimi K2 picked it up too. It is harder to implement than GQA but the KV-cache shrink is dramatic. In this lab MLA is not yet implemented; the explainer is here so you know what the cost-panel KV row looks like under MLA: substantially smaller than MHA, smaller than GQA, in exchange for two extra matmuls per token to decompress.
+**Why it matters:** MLA is the most aggressive KV-cache compression shipping in a frontier-class open model. DeepSeek-V2 and V3 use it. Kimi K2 picked it up too. It is harder to implement than GQA, but the KV-cache shrink is dramatic. In this lab MLA is implemented in simplified form. The cost panel's KV row drops substantially compared to MHA and stays smaller than GQA, in exchange for two extra matmuls per token to decompress the latent into per-head K and V.

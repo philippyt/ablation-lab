@@ -7,6 +7,7 @@ from backend.routes import configs as configs_route
 from backend.routes import content as content_route
 from backend.routes import cost as cost_route
 from backend.routes import generate as generate_route
+from backend.routes import resolve as resolve_route
 REPO_ROOT = Path(__file__).resolve().parent.parent
 FRONTEND_DIR = REPO_ROOT / "frontend"
 DIST_DIR = FRONTEND_DIR / "dist"
@@ -14,6 +15,7 @@ app = FastAPI(title="Ablation Lab")
 app.include_router(configs_route.router)
 app.include_router(cost_route.router)
 app.include_router(generate_route.router)
+app.include_router(resolve_route.router)
 app.include_router(content_route.router)
 
 @app.get("/")

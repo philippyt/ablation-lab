@@ -12,10 +12,10 @@ sources:
 
 Allocate a learned embedding matrix of shape `(ctx, d_model)` and add `pos_embed[m]` to the token embedding at position `m`. The model figures out for itself what "being at position 7" should add to a token's representation.
 
-Parameter count: `ctx * d_model`. In this lab with `ctx = 128, d_model = 128` that is 16,384 extra params; in GPT-3 with `ctx = 2048, d_model = 12288` it is 25.2M params dedicated solely to positions.
+Parameter count: `ctx * d_model`. In this lab at `ctx = 256, d_model = 128` that is 32,768 extra params. In GPT-3 with `ctx = 2048, d_model = 12288` it is 25.2M params dedicated entirely to positions.
 
-Two limits:
-1. Hard ceiling at `ctx`: positions beyond the training window have no embedding and behavior is undefined.
-2. No relative property: extending the context window requires retraining or interpolation.
+Two practical limits:
+1. Hard ceiling at `ctx`. Positions beyond the training window have no embedding and behavior is undefined.
+2. No relative property. Extending the context window requires retraining or interpolation, not free extrapolation.
 
-**Why it matters:** GPT-2 and GPT-3 used absolute learned positions and it worked, at GPT-3 cost. Modern open weights replaced absolute with RoPE because zero params and natural length extrapolation are strictly better at scale. In this lab the cost panel grows by `ctx * d_model` parameters when you pick absolute. That is the only architectural choice in the pos_embed dropdown that adds learned weights.
+**Why it matters:** GPT-2 and GPT-3 used absolute learned positions and it worked at their scale. Modern open weights replaced absolute with RoPE because zero parameters and natural length extrapolation are strictly better at scale. In this lab the cost panel grows by `ctx * d_model` parameters when you pick absolute. That is the only choice in the pos_embed dropdown that adds learned weights.

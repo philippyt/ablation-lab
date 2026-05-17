@@ -17,6 +17,6 @@ KV-cache size is bounded by `W`, not by `ctx`. For long generation `ctx >> W`, t
 
 `kv_cache_bytes = 2 * n_layers * n_kv_heads * head_dim * min(ctx, W) * dtype_bytes`
 
-Stacking many sliding-window layers gives an effective receptive field of `n_layers * W`, so information can still flow long-range through depth, just not in a single layer.
+Stacking many sliding-window layers gives an effective receptive field of `n_layers * W`. Information can still flow long-range through depth, just not within a single layer.
 
-**Why it matters:** Mistral 7B shipped pure SWA with `W = 4096`. Gemma 2 alternates SWA and full attention every other layer (the "global" layers carry long-range information; the "local" layers are cheap). At long context, SWA layers are the cheapest attention shape that still has any locality model. In this lab SWA is not yet implemented; conceptually its KV row would saturate at `W` instead of growing with `ctx`.
+**Why it matters:** Mistral 7B shipped pure SWA with `W = 4096`. Gemma 2 alternates SWA and full attention every other layer. The "global" layers carry long-range information and the "local" layers are cheap. At long context, SWA layers are the cheapest attention shape that still has any local-context model. In this lab SWA is not yet implemented. Conceptually its KV row would saturate at `W` instead of growing with `ctx`.

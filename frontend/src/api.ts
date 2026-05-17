@@ -10,7 +10,7 @@ export async function fetchEntries(): Promise<ManifestEntry[]> {
 export type StreamEvent =
   | { event: "start"; prompt_tokens: number; ctx: number; hash: string }
   | { event: "token"; text: string }
-  | { event: "done"; val_loss: number; hash: string }
+  | { event: "done"; val_loss: number; hash: string; stop_reason?: "eos" | "max_tokens"; tokens?: number }
   | { event: "error"; message: string };
 
 export async function* streamGenerate(req: GenerateRequest): AsyncGenerator<StreamEvent> {

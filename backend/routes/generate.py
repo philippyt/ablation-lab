@@ -5,7 +5,7 @@ import json
 from fastapi import APIRouter, HTTPException
 from sse_starlette.sse import EventSourceResponse
 
-from ablation.checkpoints import find_entry_for_config
+from ablation.checkpoints import resolve_config
 from ablation.config import ArchConfig
 from backend.inference import stream_generate
 from backend.schemas import GenerateIn
@@ -20,18 +20,22 @@ async def post_generate(req: GenerateIn) -> EventSourceResponse:
     except (ValueError, TypeError) as e:
         raise HTTPException(status_code=400, detail=str(e))
 
-    if find_entry_for_config(cfg) is None:
+    resolution = resolve_config(cfg)
+    if resolution["state"] == "red":
         raise HTTPException(
             status_code=404,
             detail={
-                "error": "no_checkpoint",
-                "message": "No trained checkpoint exists for this architecture. Pick a different combination of components.",
+                "error": "no_faithful_checkpoint",
+                "message": "No trained checkpoint within Hamming ≤ 2 on Kind-A axes. Cost panel still shown.",
+                "differing_fields": resolution["differing_fields"],
+                "distance": resolution["distance"],
             },
         )
 
     async def event_iter():
         async for ev in stream_generate(
-            config=cfg,
+            requested_config=cfg,
+            resolution=resolution,
             prompt=req.prompt,
             max_tokens=req.max_tokens,
             temperature=req.temperature,
