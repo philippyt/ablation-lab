@@ -21,8 +21,7 @@ export async function* streamGenerate(req: GenerateRequest): AsyncGenerator<Stre
   });
   if (!res.ok) {
     const err = await res.json().catch(() => ({ detail: res.statusText }));
-    const msg = typeof err.detail === "string" ? err.detail : (err.detail?.message ?? res.statusText);
-    yield { event: "error", message: msg };
+    yield { event: "error", message: humanizeError(res.status, err) };
     return;
   }
   if (!res.body) {
@@ -46,6 +45,25 @@ export async function* streamGenerate(req: GenerateRequest): AsyncGenerator<Stre
       if (parsed) yield parsed;
     }
   }
+}
+
+function humanizeError(status: number, err: any): string {
+  if (status === 422 && Array.isArray(err?.detail)) {
+    const parts: string[] = [];
+    for (const e of err.detail) {
+      const field = Array.isArray(e.loc) ? e.loc[e.loc.length - 1] : "value";
+      const ctx = e.ctx || {};
+      if (e.type === "less_than_equal") parts.push(`${field} must be at most ${ctx.le}`);
+      else if (e.type === "greater_than_equal") parts.push(`${field} must be at least ${ctx.ge}`);
+      else if (e.type === "less_than") parts.push(`${field} must be less than ${ctx.lt}`);
+      else if (e.type === "greater_than") parts.push(`${field} must be greater than ${ctx.gt}`);
+      else parts.push(`${field}: ${e.msg || "invalid"}`);
+    }
+    return parts.join(" · ");
+  }
+  if (typeof err?.detail === "string") return err.detail;
+  if (typeof err?.detail?.message === "string") return err.detail.message;
+  return `request failed (${status})`;
 }
 
 function parseSSE(block: string): StreamEvent | null {

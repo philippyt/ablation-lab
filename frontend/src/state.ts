@@ -2,7 +2,17 @@ import { signal, computed } from "@preact/signals";
 import type { ArchConfig, CostPanel, ManifestEntry } from "./types";
 import { costPanel } from "./lib/costs";
 import { archHash } from "./lib/hash";
+import { PRESETS, type Preset } from "./lib/presets";
 export { openExplainerId } from "./content";
+
+const DEFAULT_NAME = "Untitled";
+
+function configMatchesPreset(cfg: ArchConfig, p: Preset): boolean {
+  for (const k in p.patch) {
+    if ((cfg as any)[k] !== (p.patch as any)[k]) return false;
+  }
+  return true;
+}
 
 const DEFAULT_VOCAB = 72;
 
@@ -30,7 +40,7 @@ export const defaultConfig: ArchConfig = {
 };
 
 export const config = signal<ArchConfig>({ ...defaultConfig });
-export const name = signal<string>("My model");
+export const name = signal<string>(DEFAULT_NAME);
 export const entries = signal<ManifestEntry[]>([]);
 export const previousCost = signal<CostPanel | null>(null);
 export const previousConfig = signal<ArchConfig | null>(null);
@@ -54,22 +64,12 @@ export interface HoverInfo {
 }
 export const hoverInfo = signal<HoverInfo | null>(null);
 
-const _theme = typeof localStorage !== "undefined" ? localStorage.getItem("ablation-theme") : null;
-export const darkMode = signal<boolean>(_theme === "dark");
-
 const _gpu = typeof localStorage !== "undefined" ? localStorage.getItem("ablation-gpu") : null;
-export const selectedGpu = signal<string>(_gpu ?? "h200");
+export const selectedGpu = signal<string>(_gpu ?? "vram_141");
 
 export function setSelectedGpu(id: string): void {
   selectedGpu.value = id;
   try { localStorage.setItem("ablation-gpu", id); } catch {}
-}
-
-export function toggleDarkMode(): void {
-  darkMode.value = !darkMode.value;
-  try {
-    localStorage.setItem("ablation-theme", darkMode.value ? "dark" : "light");
-  } catch {}
 }
 
 export const currentCost = computed<CostPanel>(() => costPanel(config.value));
@@ -150,7 +150,7 @@ export const kindBActive = computed<string[]>(() => {
   return a;
 });
 
-export async function updateConfig(patch: Partial<ArchConfig>): Promise<void> {
+export async function updateConfig(patch: Partial<ArchConfig>, fromPreset?: Preset): Promise<void> {
   const next = { ...config.value, ...patch };
   if (next.d_model % next.n_heads === 0) {
     next.head_dim = next.d_model / next.n_heads;
@@ -162,6 +162,14 @@ export async function updateConfig(patch: Partial<ArchConfig>): Promise<void> {
   previousConfig.value = { ...config.value };
   config.value = next;
   currentHash.value = await archHash(next);
+  if (fromPreset) {
+    name.value = fromPreset.name;
+  } else {
+    const cur = PRESETS.find(p => p.name === name.value);
+    if (cur && !configMatchesPreset(next, cur)) {
+      name.value = `Modified ${cur.name}`;
+    }
+  }
   const { detectConsequences } = await import("./lib/consequences");
   lastConsequences.value = detectConsequences(previousConfig.value, previousCost.value, next, costPanel(next));
 }
@@ -171,7 +179,7 @@ export async function setEntries(list: ManifestEntry[]): Promise<void> {
   if (list.length > 0) {
     const baseline = list[0];
     config.value = { ...baseline.arch_config };
-    name.value = baseline.name ?? "My model";
+    name.value = DEFAULT_NAME;
     previousCost.value = null;
   }
   currentHash.value = await archHash(config.value);

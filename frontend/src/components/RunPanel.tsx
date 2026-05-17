@@ -48,7 +48,7 @@ export function RunPanel() {
           setOutput(acc);
           attnLabels.value = [...attnLabels.value, ev.text];
           const prev = cacheState.value;
-          cacheState.value = { ...prev, positions: Math.min(prev.positions + 1, config.value.ctx) };
+          cacheState.value = { ...prev, positions: prev.positions + 1 };
           if (tokens % 4 === 0 || tokens < 4) {
             const dt = (performance.now() - tStart) / 1000;
             const tps = dt > 0 ? tokens / dt : 0;
@@ -103,7 +103,7 @@ export function RunPanel() {
         <label>Prompt<HelpHint text={HINTS.prompt} /></label>
         <textarea value={prompt} onInput={(e) => setPrompt((e.target as HTMLTextAreaElement).value)} />
         <label>Max tokens<HelpHint text={HINTS.max_tokens} /></label>
-        <input type="number" min={1} max={500} value={maxTokens}
+        <input type="number" min={1} max={5000} value={maxTokens}
                onInput={(e) => setMaxTokens(parseInt((e.target as HTMLInputElement).value, 10))} />
         <label>Temperature<HelpHint text={HINTS.temperature} /></label>
         <input type="number" min={0} max={2} step={0.1} value={temperature}

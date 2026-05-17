@@ -9,14 +9,13 @@ export interface GpuSpec {
 }
 
 export const GPUS: GpuSpec[] = [
-  { id: "b200", name: "B200 192GB", fp16_tflops: 2250, bandwidth_gbs: 8000, memory_gb: 192 },
-  { id: "h200", name: "H200 141GB SXM", fp16_tflops: 989, bandwidth_gbs: 4800, memory_gb: 141 },
-  { id: "mi300x", name: "MI300X 192GB", fp16_tflops: 1307, bandwidth_gbs: 5300, memory_gb: 192 },
-  { id: "h100", name: "H100 80GB SXM", fp16_tflops: 989, bandwidth_gbs: 3350, memory_gb: 80 },
-  { id: "rtx5090", name: "RTX 5090 32GB", fp16_tflops: 209, bandwidth_gbs: 1792, memory_gb: 32 },
-  { id: "rtx4090", name: "RTX 4090 24GB", fp16_tflops: 165, bandwidth_gbs: 1008, memory_gb: 24 },
-  { id: "l40s", name: "L40S 48GB", fp16_tflops: 362, bandwidth_gbs: 864, memory_gb: 48 },
-  { id: "l4", name: "L4 24GB", fp16_tflops: 121, bandwidth_gbs: 300, memory_gb: 24 },
+  { id: "vram_16", name: "16 GB", fp16_tflops: 65, bandwidth_gbs: 320, memory_gb: 16 },
+  { id: "vram_24", name: "24 GB", fp16_tflops: 165, bandwidth_gbs: 1008, memory_gb: 24 },
+  { id: "vram_32", name: "32 GB", fp16_tflops: 209, bandwidth_gbs: 1792, memory_gb: 32 },
+  { id: "vram_48", name: "48 GB", fp16_tflops: 362, bandwidth_gbs: 864, memory_gb: 48 },
+  { id: "vram_80", name: "80 GB", fp16_tflops: 989, bandwidth_gbs: 3350, memory_gb: 80 },
+  { id: "vram_141", name: "141 GB", fp16_tflops: 989, bandwidth_gbs: 4800, memory_gb: 141 },
+  { id: "vram_192", name: "192 GB", fp16_tflops: 1800, bandwidth_gbs: 6800, memory_gb: 192 },
 ];
 
 export function decodeMsPerToken(cfg: ArchConfig, gpu: GpuSpec, dtypeBytes = 2): number {

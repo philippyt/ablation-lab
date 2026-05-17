@@ -1,6 +1,6 @@
 import { useEffect } from "preact/hooks";
 import { fetchEntries } from "./api";
-import { setEntries, currentHash, name, lastError, darkMode, toggleDarkMode } from "./state";
+import { setEntries, currentHash, name, lastError } from "./state";
 import { loadContent } from "./content";
 import { ConfigPicker } from "./components/ConfigPicker";
 import { Presets } from "./components/Presets";
@@ -12,6 +12,7 @@ import { KVCacheState } from "./components/KVCacheState";
 import { SidePanel, FloatingTooltip } from "./components/Explainer";
 import { PyTorchCodeModal, codeModalOpen } from "./components/PyTorchCode";
 import { AttentionGridModal } from "./components/AttentionGrid";
+import { WhatIsThisModal, whatIsThisOpen } from "./components/WhatIsThisModal";
 
 export function App() {
   useEffect(() => {
@@ -21,19 +22,12 @@ export function App() {
     loadContent().catch((e) => (lastError.value = e.message));
   }, []);
 
-  useEffect(() => {
-    document.documentElement.dataset.theme = darkMode.value ? "dark" : "light";
-  });
-
   return (
     <div class="app">
       <header>
         <h1>Ablation Lab</h1>
-        <span class="tagline">Build a tiny transformer, ablate a part, watch it break.</span>
+        <button class="wit-button" onClick={() => (whatIsThisOpen.value = true)}>What is this?</button>
         <div class="header-right">
-          <button class="theme-toggle" onClick={toggleDarkMode} title={darkMode.value ? "switch to light" : "switch to dark"}>
-            {darkMode.value ? "☀" : "☾"}
-          </button>
           <span class="badge">{name.value}</span>
           <span class="hash">hash {currentHash.value || "—"}</span>
         </div>
@@ -45,7 +39,7 @@ export function App() {
             <h2>Architecture</h2>
             <div class="panel-actions">
               <button class="ghost ghost-sm" onClick={() => (codeModalOpen.value = true)}>
-                show in pytorch
+                show as pytorch code
               </button>
             </div>
           </div>
@@ -74,6 +68,7 @@ export function App() {
       <FloatingTooltip />
       <PyTorchCodeModal />
       <AttentionGridModal />
+      <WhatIsThisModal />
     </div>
   );
 }

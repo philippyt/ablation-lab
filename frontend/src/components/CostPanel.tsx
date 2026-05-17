@@ -19,7 +19,7 @@ import { Consequences } from "./Consequences";
 
 const TOTAL_PARAMS_HINT = "Total learned weights at the lab's tiny scale (d_model=128, n_layers=4). Presets change the architecture but keep this scale fixed, so the number shows the shape of each architecture, not the real model's true size. DeepSeek V3 ships at around 671B total.";
 export const BASIS_HINT = "Every number on this panel is for the model actually trained and run in this lab at toy dimensions (d_model, n_layers, ctx, vocab as shown in the diagram). No projected real-scale numbers anywhere.";
-const ROOFLINE_HINT = "A roofline analysis. Arithmetic intensity is FLOPs done per byte read from memory for one decode step. The ridge point is the GPU's peak compute divided by its peak memory bandwidth. Below the ridge point the GPU sits idle waiting for memory and the workload is memory-bound. Above the ridge point compute saturates first and the workload is compute-bound. Decode at small scale is almost always memory-bound, which is why bandwidth matters more than peak TFLOPs.";
+const ROOFLINE_HINT = "Arithmetic intensity is FLOPs done per byte read from memory for one decode step. The ridge point is the hardware's peak compute divided by its peak memory bandwidth. Below the ridge point the chip sits idle waiting for memory and the workload is memory-bound. Above the ridge point it is compute-bound. Decode at small scale is almost always memory-bound, which is why bandwidth matters more than peak TFLOPs. The dropdown selects a VRAM tier with the bandwidth and TFLOPs typical of accelerators at that size.";
 
 export function CostBasisHint() {
   const cfg = config.value;
@@ -102,14 +102,14 @@ export function CostPanel() {
         return (
           <div class="roofline">
             <div class="roofline-head">
-              <span>roofline</span>
+              <span>decode</span>
               <HelpHint text={ROOFLINE_HINT} />
-              <select class="roofline-gpu" value={selectedGpu.value} onChange={(e) => setSelectedGpu((e.target as HTMLSelectElement).value)} title="The selector exists to provide a ridge point. Different GPUs have different bandwidth-vs-compute ratios, so the memory-bound vs compute-bound verdict can change with the GPU.">
+              <select class="roofline-gpu" value={selectedGpu.value} onChange={(e) => setSelectedGpu((e.target as HTMLSelectElement).value)} title="VRAM tier. Each tier uses bandwidth and FP16 TFLOPs typical of accelerators at that memory size. The selector sets the ridge point, not a capacity check.">
                 {GPUS.map(g => <option value={g.id}>{g.name}</option>)}
               </select>
             </div>
             <p class="roofline-prose">
-              On <strong>{gpu.name}</strong> this model is <strong>{memBound ? "memory-bound" : "compute-bound"}</strong>. Arithmetic intensity is <strong>{intensity.toFixed(2)}</strong> FLOPs per byte, {memBound ? "well below" : "above"} the GPU's ridge point of <strong>{ridge.toFixed(0)}</strong>. Decode runs at roughly <strong>{fmtTps(tps)} tok/s</strong>, capped by <strong>{memBound ? "memory bandwidth" : "compute throughput"}</strong>, not compute.
+              <strong>{memBound ? "memory-bound" : "compute-bound"}</strong> on a {gpu.name} tier. Intensity <strong>{intensity.toFixed(2)}</strong> {memBound ? "<" : ">"} ridge <strong>{ridge.toFixed(0)}</strong> FLOPs/byte. ~<strong>{fmtTps(tps)} tok/s</strong>, capped by {memBound ? "bandwidth" : "compute"}.
             </p>
           </div>
         );

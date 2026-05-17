@@ -1,5 +1,5 @@
 import { PRESETS, type Preset } from "../lib/presets";
-import { config, updateConfig, name } from "../state";
+import { config, updateConfig } from "../state";
 
 function matches(cfg: any, p: Preset): boolean {
   for (const k in p.patch) {
@@ -12,8 +12,7 @@ export function Presets() {
   const cfg = config.value;
 
   function apply(p: Preset) {
-    name.value = p.name;
-    updateConfig(p.patch);
+    updateConfig(p.patch, p);
   }
 
   return (

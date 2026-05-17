@@ -7,14 +7,16 @@ const SWAP = "dia-swap";
 const SWAP_DIM = "dia-swap-dim";
 
 const BOX_W = 76;
-const BOX_W_SHORT = 52;
-const BOX_H = 40;
-const PLUS_R = 11;
-const GAP = 16;
-const TOP_PAD = 64;
-const BOT_PAD = 18;
-const LABEL_FONT = 10;
-const SUB_FONT = 8.5;
+const BOX_W_SHORT = 48;
+const BOX_H = 54;
+const PLUS_R = 13;
+const GAP = 30;
+const FRAME_TOP = 14;
+const RESIDUAL_Y = 36;
+const TOP_PAD = 82;
+const FRAME_BOTTOM_PAD = 14;
+const LABEL_FONT = 11;
+const SUB_FONT = 9;
 
 interface Item {
   type: "box" | "plus";
@@ -77,14 +79,21 @@ export function Diagram() {
   const plus2X = pushPlus();
   const blockEnd = x;
 
-  if (cfg.enable_norms) pushBox(`Final ${normShort}`, undefined, FIXED, `norm.${cfg.norm}`, BOX_W_SHORT);
+  if (cfg.enable_norms) pushBox(normShort, undefined, FIXED, `norm.${cfg.norm}`, BOX_W_SHORT);
   pushBox("LM Head", cfg.tie_embeddings ? "tied" : "untied", FIXED, "misc.tied_embeddings");
 
   const totalW = x + 6;
-  const totalH = TOP_PAD + BOX_H + BOT_PAD;
   const cy = TOP_PAD + BOX_H / 2;
-  const arcTopY = 20;
-  const arcTopY2 = 38;
+  const frameTopY = FRAME_TOP;
+  const frameBottomY = TOP_PAD + BOX_H + FRAME_BOTTOM_PAD;
+  const totalH = frameBottomY + 8;
+
+  const frameX = blockStart - GAP / 2;
+  const frameW = blockEnd - blockStart - GAP / 2 + 6;
+
+  const posItem = items[1];
+  const tap1X = (posItem.x + posItem.w + preNorm1X) / 2;
+  const tap2X = (plus1X + PLUS_R + postPlus1X) / 2;
 
   function onEnter(id: string, e: any) {
     const r = (e.target as SVGElement).getBoundingClientRect();
@@ -94,57 +103,73 @@ export function Diagram() {
     hoverInfo.value = null;
   }
 
-  function arc(startX: number, endX: number, topY: number) {
-    return `M ${startX} ${TOP_PAD} L ${startX} ${topY} L ${endX} ${topY} L ${endX} ${cy - PLUS_R}`;
+  function residualPath(tapX: number, endX: number) {
+    return `M ${tapX} ${cy} L ${tapX} ${RESIDUAL_Y} L ${endX} ${RESIDUAL_Y} L ${endX} ${cy - PLUS_R - 1}`;
   }
 
   return (
+    <div class="diagram-outer">
     <div class="diagram-wrap">
       <svg class="diagram" width="100%" height="100%" viewBox={`0 0 ${totalW} ${totalH}`} preserveAspectRatio="xMidYMid meet">
         <defs>
           <marker id="arr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="5" markerHeight="5" orient="auto">
             <path class="dia-arrow" d="M0,0 L10,5 L0,10 z" />
           </marker>
+          <marker id="res-arr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="5.5" markerHeight="5.5" orient="auto">
+            <path class="dia-residual-arrow" d="M0,0 L10,5 L0,10 z" />
+          </marker>
+          <pattern id="dia-hatch" patternUnits="userSpaceOnUse" width="6" height="6" patternTransform="rotate(-45)">
+            <rect width="6" height="6" class="dia-hatch-bg" />
+            <line x1="0" y1="0" x2="0" y2="6" class="dia-hatch-line" stroke-width="2" />
+          </pattern>
         </defs>
 
-        <rect class="dia-block-frame" x={blockStart - GAP / 2} y={TOP_PAD - 12}
-              width={blockEnd - blockStart - GAP / 2 + 4}
-              height={BOX_H + 24}
-              stroke-dasharray="3 2" stroke-width="1" />
-        <text class="dia-block-label" x={blockEnd - GAP / 2 - 2} y={TOP_PAD - 15} text-anchor="end"
-              font-family="'Inter Tight', sans-serif" font-size="10" font-weight="500"
-              font-style="italic">
-          ×{cfg.n_layers} layers
-        </text>
+        <rect class="dia-block-frame" x={frameX} y={frameTopY}
+              width={frameW}
+              height={frameBottomY - frameTopY}
+              stroke-dasharray="4 3" stroke-width="1.2" rx="2" />
 
-        <path class="dia-residual" d={arc(preNorm1X - GAP / 2, plus1X, arcTopY)} stroke-width="1.1" />
-        <path class="dia-residual" d={arc(postPlus1X - GAP / 2, plus2X, arcTopY2)} stroke-width="1.1" />
-        <text class="dia-residual-label" x={(preNorm1X + plus1X) / 2} y={arcTopY - 4} text-anchor="middle"
-              font-family="'Inter Tight', sans-serif" font-size="9" font-style="italic">
-          residual
-        </text>
-        <text class="dia-residual-label" x={(postPlus1X + plus2X) / 2} y={arcTopY2 - 4} text-anchor="middle"
-              font-family="'Inter Tight', sans-serif" font-size="9" font-style="italic">
-          residual
-        </text>
+        <g class="dia-block-tag">
+          <rect x={frameX + frameW - 70} y={frameTopY - 8} width="64" height="16" rx="2" />
+          <text x={frameX + frameW - 38} y={frameTopY + 4} text-anchor="middle"
+                font-family="'Inter Tight', sans-serif" font-size="10.5" font-weight="600" font-style="italic">
+            ×{cfg.n_layers} layers
+          </text>
+        </g>
 
         {items.slice(0, -1).map((it, i) => {
           const next = items[i + 1];
           const x1 = it.type === "box" ? it.x + it.w : it.x + PLUS_R;
           const x2 = next.type === "box" ? next.x : next.x - PLUS_R;
           return (
-            <line class="dia-line" x1={x1 + 2} y1={cy} x2={x2 - 4} y2={cy}
+            <line class="dia-line" x1={x1 + 2} y1={cy} x2={x2 - 1} y2={cy}
                   stroke-width="1.6" marker-end="url(#arr)" />
           );
         })}
+
+        <path class="dia-residual" d={residualPath(tap1X, plus1X)}
+              stroke-width="1.6" marker-end="url(#res-arr)" fill="none" />
+        <path class="dia-residual" d={residualPath(tap2X, plus2X)}
+              stroke-width="1.6" marker-end="url(#res-arr)" fill="none" />
+        <circle class="dia-residual-tap" cx={tap1X} cy={cy} r="3" />
+        <circle class="dia-residual-tap" cx={tap2X} cy={cy} r="3" />
+        <text class="dia-residual-label" x={(tap1X + plus1X) / 2} y={RESIDUAL_Y - 5} text-anchor="middle"
+              font-family="'Inter Tight', sans-serif" font-size="9.5" font-style="italic">
+          residual
+        </text>
+        <text class="dia-residual-label" x={(tap2X + plus2X) / 2} y={RESIDUAL_Y - 5} text-anchor="middle"
+              font-family="'Inter Tight', sans-serif" font-size="9.5" font-style="italic">
+          residual
+        </text>
 
         {items.map((it, i) => {
           if (it.type === "plus") {
             return (
               <g key={i}>
-                <circle class="dia-plus" cx={it.x} cy={cy} r={PLUS_R} stroke-width="1.3" />
-                <text class="dia-plus-text" x={it.x} y={cy + 4} text-anchor="middle"
-                      font-family="'Inter Tight', sans-serif" font-size="13" font-weight="700">+</text>
+                <circle class="dia-plus-bg" cx={it.x} cy={cy} r={PLUS_R + 1.5} />
+                <circle class="dia-plus" cx={it.x} cy={cy} r={PLUS_R} stroke-width="1.6" />
+                <text class="dia-plus-text" x={it.x} y={cy + 5} text-anchor="middle"
+                      font-family="'Inter Tight', sans-serif" font-size="17" font-weight="800">+</text>
               </g>
             );
           }
@@ -154,20 +179,20 @@ export function Diagram() {
             <g key={i}>
               <rect class={`dia-box ${it.fill}`}
                     x={it.x} y={TOP_PAD} width={it.w} height={BOX_H}
-                    stroke-width="1.2"
+                    stroke-width="1.3" rx="2"
                     style={{ cursor: interactive ? "pointer" : "default" }}
                     onClick={interactive ? () => (openExplainerId.value = it.explainerId!) : undefined}
                     onMouseEnter={interactive ? (e) => onEnter(it.explainerId!, e) : undefined}
                     onMouseLeave={interactive ? onLeave : undefined}
               />
-              <text class="dia-text" x={it.x + it.w / 2} y={hasSub ? cy - 2 : cy + 3} text-anchor="middle"
+              <text class="dia-text" x={it.x + it.w / 2} y={hasSub ? cy - 4 : cy + 4} text-anchor="middle"
                     font-family="'Inter Tight', sans-serif" font-size={LABEL_FONT}
                     font-weight="600"
                     style="pointer-events:none;">
                 {it.label}
               </text>
               {hasSub && (
-                <text class="dia-text-sub" x={it.x + it.w / 2} y={cy + 10} text-anchor="middle"
+                <text class="dia-text-sub" x={it.x + it.w / 2} y={cy + 12} text-anchor="middle"
                       font-family="'Inter Tight', sans-serif" font-size={SUB_FONT}
                       font-weight="500" font-style="italic"
                       style="pointer-events:none;">
@@ -177,7 +202,15 @@ export function Diagram() {
             </g>
           );
         })}
+
       </svg>
+    </div>
+    <div class="diagram-legend">
+      <span class="diagram-legend-item"><span class="diagram-legend-sw dia-swap" /> swappable component</span>
+      <span class="diagram-legend-item"><span class="diagram-legend-sw dia-fixed" /> fixed (always present)</span>
+      <span class="diagram-legend-item"><span class="diagram-legend-sw dia-swap-dim" /> norm (swappable, dimmed)</span>
+      <span class="diagram-legend-item"><span class="diagram-legend-sw dia-disabled" /> ablated (component turned off)</span>
+    </div>
     </div>
   );
 }

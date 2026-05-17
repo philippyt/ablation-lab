@@ -27,6 +27,11 @@ export function AttentionGridModal() {
   const labels = allLabels.slice(0, N);
   const att = attentionKind(cfg).toUpperCase();
   const [sel, setSel] = useState<number | null>(null);
+  const [hovered, setHovered] = useState<number | null>(null);
+  const cacheS = cacheState.value;
+  const streaming = cacheS.status === "streaming";
+  const activeRow = streaming && allLabels.length > 0 ? Math.min(allLabels.length - 1, MAX_VIEW - 1) : -1;
+  const focus = hovered !== null ? hovered : sel;
 
   const gridW = N * CELL;
   const totalW = LABEL_W + gridW + 30;
@@ -37,7 +42,7 @@ export function AttentionGridModal() {
       <div class="modal attn-modal" onClick={(e) => e.stopPropagation()}>
         <div class="modal-head">
           <div>
-            <div class="meta">attention pattern</div>
+            <div class="meta">attention pattern{streaming && <span class="attn-live-tag">live</span>}</div>
             <h3>Causal self-attention · {att}</h3>
             <p class="short">
               Each row is a query position. Cells lit in that row are the key positions the query can read.
@@ -61,39 +66,60 @@ export function AttentionGridModal() {
                 <text x={LABEL_W - 8} y={20} text-anchor="end" class="attn-axis-l">queries ↓</text>
                 <text x={LABEL_W + gridW / 2} y={20} text-anchor="middle" class="attn-axis-l">keys →</text>
 
-                {labels.map((_, j) => (
-                  <text x={LABEL_W + j * CELL + CELL / 2} y={HEADER_H - 4}
-                        text-anchor="middle" class="attn-tick">{j}</text>
-                ))}
+                {labels.map((_, j) => {
+                  const isFocusKey = focus !== null && j <= focus;
+                  return (
+                    <text x={LABEL_W + j * CELL + CELL / 2} y={HEADER_H - 4}
+                          text-anchor="middle"
+                          class={`attn-tick ${isFocusKey ? "attn-tick-focus" : ""}`}>{j}</text>
+                  );
+                })}
 
                 {labels.map((char, i) => {
-                  const isSel = sel === i;
+                  const isFocus = focus === i;
+                  const isActive = activeRow === i;
+                  const isDimmed = focus !== null && focus !== i;
                   return (
-                    <>
+                    <g
+                      onMouseEnter={() => setHovered(i)}
+                      onMouseLeave={() => setHovered(null)}
+                      onClick={() => setSel(i)}
+                      style="cursor:pointer;"
+                    >
+                      <rect
+                        x={LABEL_W - LABEL_W + 4}
+                        y={HEADER_H + i * CELL}
+                        width={LABEL_W - 8 + gridW}
+                        height={CELL - 1}
+                        class={`attn-rowband ${isFocus ? "attn-rowband-focus" : ""} ${isActive ? "attn-rowband-active" : ""} ${isDimmed ? "attn-rowband-dim" : ""}`}
+                      />
                       <text x={LABEL_W - 8} y={HEADER_H + i * CELL + CELL / 2 + 4}
-                            text-anchor="end" class={`attn-rowlabel ${isSel ? "sel" : ""}`}>
+                            text-anchor="end" class={`attn-rowlabel ${isFocus ? "sel" : ""} ${isActive ? "live" : ""}`}>
                         <tspan class="attn-rowidx">{i}</tspan>
                         <tspan dx="6">{escapeChar(char)}</tspan>
                       </text>
                       {labels.map((_, j) => {
                         const allowed = j <= i;
                         const isDiag = i === j;
-                        let fill = "#f7f5ef";
-                        let stroke = "#d8d4c8";
-                        if (allowed) {
-                          if (isDiag) { fill = "#1e40af"; stroke = "#1e40af"; }
-                          else if (isSel) { fill = "#1e40af"; stroke = "#1e40af"; }
-                          else { fill = "#e0e7ff"; stroke = "#c7d2fe"; }
-                        }
+                        const cls = [
+                          "attn-cell",
+                          allowed ? "allowed" : "masked",
+                          isDiag ? "diag" : "",
+                          isFocus && allowed ? "in-focus" : "",
+                          isActive && isDiag ? "live-diag" : "",
+                          isDimmed ? "dim" : "",
+                        ].filter(Boolean).join(" ");
                         return (
-                          <rect x={LABEL_W + j * CELL} y={HEADER_H + i * CELL}
-                                width={CELL - 1} height={CELL - 1}
-                                fill={fill} stroke={stroke} stroke-width="1"
-                                style="cursor:pointer;"
-                                onClick={() => setSel(i)} />
+                          <rect
+                            x={LABEL_W + j * CELL}
+                            y={HEADER_H + i * CELL}
+                            width={CELL - 1}
+                            height={CELL - 1}
+                            class={cls}
+                          />
                         );
                       })}
-                    </>
+                    </g>
                   );
                 })}
               </svg>
@@ -103,16 +129,21 @@ export function AttentionGridModal() {
               <span><span class="sw sw-self" /> Q = K (diagonal, self-attention)</span>
               <span><span class="sw sw-allowed" /> attended (past or self)</span>
               <span><span class="sw sw-masked" /> masked (future, set to −∞)</span>
+              {streaming && <span><span class="sw sw-live" /> currently generating</span>}
             </div>
 
             <div class="attn-readout">
-              {sel === null ? (
-                <span class="attn-hint">Click any row to see what that position attends to.</span>
+              {focus === null ? (
+                <span class="attn-hint">
+                  {streaming
+                    ? `Streaming. Row ${activeRow} is the position the model is producing right now. Hover any row to see what that position attends to.`
+                    : "Hover any row to see what that position attends to."}
+                </span>
               ) : (
                 <span>
-                  Position <code>{sel}</code> (token "<code>{escapeChar(labels[sel])}</code>") attends to{" "}
-                  <code>K[0..{sel}]</code> = "<code>{labels.slice(0, sel + 1).map(escapeChar).join("")}</code>"
-                  <span class="muted"> · {sel + 1} key{sel === 0 ? "" : "s"} visible, {Math.max(0, N - sel - 1)} masked</span>
+                  Position <code>{focus}</code> (token "<code>{escapeChar(labels[focus])}</code>") attends to{" "}
+                  <code>K[0..{focus}]</code> = "<code>{labels.slice(0, focus + 1).map(escapeChar).join("")}</code>"
+                  <span class="muted"> · {focus + 1} key{focus === 0 ? "" : "s"} visible, {Math.max(0, N - focus - 1)} masked</span>
                 </span>
               )}
             </div>

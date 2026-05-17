@@ -29,7 +29,7 @@ export function PyTorchCodeModal() {
           <div>
             <div class="meta">pytorch</div>
             <h3>Architecture in code</h3>
-            <p class="short">PyTorch class definitions for the components in your current config.</p>
+            <p class="short">Your configured architecture as a self-contained PyTorch script.</p>
           </div>
           <div class="modal-actions">
             <button class="ghost" onClick={copy}>{copied ? "copied" : "copy"}</button>
