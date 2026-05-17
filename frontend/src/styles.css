@@ -351,6 +351,85 @@ header h1 {
   background: var(--accent);
 }
 
+.instr-plot-wrap {
+  margin: 0.3rem 0 0.45rem 0;
+  position: relative;
+}
+.instr-plot {
+  display: block;
+  background: transparent;
+}
+.instr-plot-axis {
+  stroke: var(--fg);
+  stroke-width: 0.8;
+  vector-effect: non-scaling-stroke;
+  fill: none;
+}
+.instr-plot-tick-mark {
+  stroke: var(--fg);
+  stroke-width: 0.7;
+  vector-effect: non-scaling-stroke;
+}
+.instr-plot-tick-label {
+  font-family: var(--mono);
+  font-size: 9px;
+  fill: var(--fg);
+}
+.instr-plot-xlabel {
+  font-family: var(--mono);
+  font-size: 10px;
+  fill: var(--fg);
+}
+.instr-plot-line {
+  stroke: var(--fg);
+  stroke-width: 1.1;
+  vector-effect: non-scaling-stroke;
+  fill: none;
+}
+.instr-plot-marker {
+  fill: var(--fg);
+  stroke: var(--panel);
+  stroke-width: 0.6;
+  vector-effect: non-scaling-stroke;
+}
+.instr-plot-ref {
+  stroke: var(--muted);
+  stroke-width: 0.7;
+  vector-effect: non-scaling-stroke;
+  fill: none;
+}
+.instr-plot-ref-text {
+  font-family: var(--mono);
+  font-size: 8.5px;
+  fill: var(--muted);
+  font-style: italic;
+}
+.instr-plot-ref-off {
+  font-family: var(--mono);
+  font-size: 0.65rem;
+  color: var(--muted);
+  font-style: italic;
+  text-align: right;
+  margin-top: 0.15rem;
+}
+.instr-spark-values {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(70px, 1fr));
+  gap: 0.2rem 0.45rem;
+  font-family: var(--mono);
+  font-size: 0.7rem;
+}
+.instr-spark-cell {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 0.3rem;
+}
+.instr-num-inline {
+  font-weight: 700;
+  color: var(--fg);
+  font-variant-numeric: tabular-nums;
+}
+
 .instr-routing-layer {
   margin-bottom: 0.65rem;
   padding-bottom: 0.45rem;
@@ -819,6 +898,19 @@ svg.diagram {
 }
 .roofline-prose strong {
   font-weight: 700;
+}
+.roofline-prefill {
+  margin: 0.45rem 0 0 0;
+  padding-top: 0.45rem;
+  border-top: 1px dashed var(--border);
+  font-family: var(--mono);
+  font-size: 0.72rem;
+  line-height: 1.5;
+  color: var(--muted);
+}
+.roofline-prefill strong {
+  font-weight: 700;
+  color: var(--fg);
 }
 .state-pill {
   display: inline-block;

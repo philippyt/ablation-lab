@@ -5,6 +5,17 @@ You compose an architecture (norm, attention paradigm, FFN shape, activation, po
 
 The trained model is intentionally tiny: d_model=128, n_layers=4, n_heads=8, head_dim=16, ctx=256, char-level vocab of 72, trained on roughly 1MB of TinyStories. The architectural question is what changes when you swap a component. The scale would only obscure it.
 
+## Findings
+
+Single-variable comparison: Llama-3-shape and Qwen3-shape are identical on every architectural axis (norm, attention type, KV-head count, FFN, activation, positional scheme, dimensions) except QK-Norm. Both resolve to their own exact trained checkpoints, so the comparison is clean.
+
+- Under greedy decoding at short lengths, both produce coherent TinyStories text.
+- Past ~300 tokens they diverge. QK-Norm-off falls into a hard repetition loop and runs to the token cap. QK-Norm-on reaches a clean end of story and stops on its own. Reproducible.
+- Both were trained from scratch with different initializations, so this is a difference between two trained models that differ on one axis, not proof QK-Norm itself causes loop avoidance.
+- Plausible mechanism: QK-Norm bounds attention logit magnitude, keeping the next-token distribution from collapsing into an attractor under deterministic decoding. One controlled pair cannot establish this.
+- Not a language-modeling-quality claim. QK-Norm-off had the slightly lower validation loss (0.933 vs 0.956). The effect is specifically decode-time degeneration.
+- Other QK-Norm-off models in the lab (Mixtral-shape, Llama-1-shape) also do not loop, but each differs from the looping config on more than the QK-Norm axis (Mixtral on FFN/MoE, Llama-1-shape on KV-head count) and resolves to a different checkpoint.
+
 ## The Kind-A / Kind-B split
 
 The central design call was figuring out which knobs need a separate trained checkpoint and which can be applied live to an existing one. Treating every knob as needing its own training run gives a cross-product in the thousands of configs. Treating every knob as live gives wrong output, because the trained weights expected one component and would be evaluated under another.

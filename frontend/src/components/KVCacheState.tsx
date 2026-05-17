@@ -1,6 +1,6 @@
 import { useState } from "preact/hooks";
 import { config, cacheState } from "../state";
-import { kvCachePerToken, kvCacheFullCtx, attentionKind } from "../lib/costs";
+import { kvCachePerToken, kvCacheFullCtx, attentionKind, mlaLatentDim, mlaRopeDim } from "../lib/costs";
 import { fmtBytes } from "../lib/format";
 import { attnModalOpen } from "./AttentionGrid";
 import type { ArchConfig } from "../types";
@@ -87,26 +87,48 @@ export function KVCacheState() {
       {showBreakdown && (
         <div class="kv-breakdown">
           <div class="kv-eq-result">per token: <strong>{fmtBytes(perToken)}</strong></div>
-          <table class="kv-eq">
-            <tbody>
-              <tr class="kv-eq-nums">
-                <td>2</td><td class="dot">·</td>
-                <td>{cfg.n_layers}</td><td class="dot">·</td>
-                <td>{cfg.n_kv_heads}</td><td class="dot">·</td>
-                <td>{cfg.head_dim}</td><td class="dot">·</td>
-                <td>2 B</td>
-              </tr>
-              <tr class="kv-eq-labels">
-                <td>K,V</td><td></td>
-                <td>layers</td><td></td>
-                <td>kv-heads</td><td></td>
-                <td>d_h</td><td></td>
-                <td>bf16</td>
-              </tr>
-            </tbody>
-          </table>
+          {cfg.attention_type === "mla" ? (
+            <table class="kv-eq">
+              <tbody>
+                <tr class="kv-eq-nums">
+                  <td>{cfg.n_layers}</td><td class="dot">·</td>
+                  <td>({mlaLatentDim(cfg)}</td><td class="dot">+</td>
+                  <td>{mlaRopeDim(cfg)})</td><td class="dot">·</td>
+                  <td>2 B</td>
+                </tr>
+                <tr class="kv-eq-labels">
+                  <td>layers</td><td></td>
+                  <td>latent</td><td></td>
+                  <td>rope</td><td></td>
+                  <td>bf16</td>
+                </tr>
+              </tbody>
+            </table>
+          ) : (
+            <table class="kv-eq">
+              <tbody>
+                <tr class="kv-eq-nums">
+                  <td>2</td><td class="dot">·</td>
+                  <td>{cfg.n_layers}</td><td class="dot">·</td>
+                  <td>{cfg.n_kv_heads}</td><td class="dot">·</td>
+                  <td>{cfg.head_dim}</td><td class="dot">·</td>
+                  <td>2 B</td>
+                </tr>
+                <tr class="kv-eq-labels">
+                  <td>K,V</td><td></td>
+                  <td>layers</td><td></td>
+                  <td>kv-heads</td><td></td>
+                  <td>d_h</td><td></td>
+                  <td>bf16</td>
+                </tr>
+              </tbody>
+            </table>
+          )}
           <div class="kv-breakdown-current">
-            current: <strong>{kind.toUpperCase()}</strong> with <strong>{cfg.n_kv_heads}</strong> kv-head{cfg.n_kv_heads === 1 ? "" : "s"}
+            current: <strong>{kind.toUpperCase()}</strong>
+            {cfg.attention_type === "mla"
+              ? <> caching a {mlaLatentDim(cfg)}-dim latent plus {mlaRopeDim(cfg)}-dim rope vector per layer per token</>
+              : <> with <strong>{cfg.n_kv_heads}</strong> kv-head{cfg.n_kv_heads === 1 ? "" : "s"}</>}
           </div>
           {counterfactuals.length > 0 && (
             <table class="kv-counterfactual">

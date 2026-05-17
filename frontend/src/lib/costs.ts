@@ -39,6 +39,14 @@ export function ridgePointFlopsPerByte(gpu: GpuSpec): number {
   return (gpu.fp16_tflops * 1e12) / (gpu.bandwidth_gbs * 1e9);
 }
 
+export function minRidgePoint(): number {
+  return GPUS.reduce((m, g) => Math.min(m, ridgePointFlopsPerByte(g)), Infinity);
+}
+
+export function activationBytes(cfg: ArchConfig, dtypeBytes = 2, batch = 1): number {
+  return batch * cfg.ctx * cfg.d_model * dtypeBytes * 4;
+}
+
 export function minGpuThatFits(cfg: ArchConfig, dtypeBytes = 2): GpuSpec | null {
   const mem = approxMemoryBytes(cfg, dtypeBytes);
   const sorted = [...GPUS].sort((a, b) => a.memory_gb - b.memory_gb);
@@ -163,11 +171,11 @@ export function activeParamsPerToken(cfg: ArchConfig): number {
   return embed + head + blocks + fnorm + posParams(cfg) + qkNormParams(cfg);
 }
 
-function mlaLatentDim(cfg: ArchConfig): number {
+export function mlaLatentDim(cfg: ArchConfig): number {
   return Math.max(8, Math.floor(cfg.d_model / 8));
 }
 
-function mlaRopeDim(cfg: ArchConfig): number {
+export function mlaRopeDim(cfg: ArchConfig): number {
   return Math.floor(cfg.head_dim / 2);
 }
 

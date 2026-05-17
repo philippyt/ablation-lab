@@ -42,7 +42,7 @@ export function WhatIsThisModal() {
         <h3>What's in the UI</h3>
         <ul class="wit-list">
           <li><strong>Architecture diagram</strong>: the live block diagram of the current selection. Click any component box for its explainer.</li>
-          <li><strong>Component presets</strong>: one-click recipes for real models (Llama 3, Mixtral, DeepSeek V3, Kimi K2.5, etc.) applied at the lab's toy scale.</li>
+          <li><strong>Component presets</strong>: one-click presets for real models (Llama 3, Mixtral, DeepSeek V3, Kimi K2.5, etc.) applied at the lab's toy scale.</li>
           <li><strong>Components</strong>: per-axis pickers and ablation toggles.</li>
           <li><strong>Cost</strong>: parameters, KV cache, memory, FFN hidden, decode roofline against a selected VRAM tier.</li>
           <li><strong>Run</strong>: prompt, max tokens, temperature, real streamed output from the matching checkpoint.</li>
