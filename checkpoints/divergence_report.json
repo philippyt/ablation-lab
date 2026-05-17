@@ -1,0 +1,1603 @@
+{
+  "threshold": 0.1,
+  "pairs_checked": 84,
+  "collapsed_count": 0,
+  "rows": [
+    {
+      "signature": {
+        "norm": "layernorm",
+        "attention_type": "mla",
+        "n_kv_heads": 1,
+        "ffn": "dense",
+        "n_experts": 4,
+        "top_k": 1,
+        "activation": "gelu",
+        "pos_embed": "rope"
+      },
+      "qkn_off_hash": "5cf19ade3757",
+      "qkn_on_hash": "afbf89985a2e",
+      "qkn_off_sample": ", there was a little girl named Lily. She loved to play with his friends and said, \"Thank you, Tim! ",
+      "qkn_on_sample": ", there was a little boy named Tim. Tim loved to play with his friends. One day, he went to the park",
+      "hamming_ratio_first_100": 0.78,
+      "lesson_collapsed": false,
+      "verdict": "pass"
+    },
+    {
+      "signature": {
+        "norm": "layernorm",
+        "attention_type": "mla",
+        "n_kv_heads": 1,
+        "ffn": "dense",
+        "n_experts": 4,
+        "top_k": 1,
+        "activation": "relu2",
+        "pos_embed": "rope"
+      },
+      "qkn_off_hash": "83c298ab9b98",
+      "qkn_on_hash": "538c4e8fda0a",
+      "qkn_off_sample": ", there was a little girl named Lily. She loved to play with his friends. They were happy to see the",
+      "qkn_on_sample": ", there was a little boy named Tim. Tim loved to play with his friends. They were happy to have a bi",
+      "hamming_ratio_first_100": 0.76,
+      "lesson_collapsed": false,
+      "verdict": "pass"
+    },
+    {
+      "signature": {
+        "norm": "layernorm",
+        "attention_type": "mla",
+        "n_kv_heads": 1,
+        "ffn": "dense",
+        "n_experts": 4,
+        "top_k": 1,
+        "activation": "silu",
+        "pos_embed": "rope"
+      },
+      "qkn_off_hash": "187a64ca4f99",
+      "qkn_on_hash": "5087dc1d571f",
+      "qkn_off_sample": ", there was a little girl named Lily. She loved to play with his friends. They liked to play with hi",
+      "qkn_on_sample": ", there was a little boy named Tim. Tim loved to play with his friends and said, \"Thank you, but you",
+      "hamming_ratio_first_100": 0.75,
+      "lesson_collapsed": false,
+      "verdict": "pass"
+    },
+    {
+      "signature": {
+        "norm": "layernorm",
+        "attention_type": "mla",
+        "n_kv_heads": 1,
+        "ffn": "moe",
+        "n_experts": 8,
+        "top_k": 2,
+        "activation": "gelu",
+        "pos_embed": "rope"
+      },
+      "qkn_off_hash": "782e533e9d07",
+      "qkn_on_hash": "9c9380d12557",
+      "qkn_off_sample": ", there was a little girl named Lily. She had a big cake on the trail. She was very good at attachin",
+      "qkn_on_sample": ", there was a little girl named Lily. She loved to play with her toys and show her mom and dad. She ",
+      "hamming_ratio_first_100": 0.49,
+      "lesson_collapsed": false,
+      "verdict": "pass"
+    },
+    {
+      "signature": {
+        "norm": "layernorm",
+        "attention_type": "mla",
+        "n_kv_heads": 1,
+        "ffn": "moe",
+        "n_experts": 8,
+        "top_k": 2,
+        "activation": "relu2",
+        "pos_embed": "rope"
+      },
+      "qkn_off_hash": "d08737315471",
+      "qkn_on_hash": "fdf2f516fa87",
+      "qkn_off_sample": ", there was a little boy named Tim. Tim loved to play with his ball and net. Tim liked to play with ",
+      "qkn_on_sample": ", there was a little girl named Lily. She loved to play with her toys and showed it to her mom. One ",
+      "hamming_ratio_first_100": 0.75,
+      "lesson_collapsed": false,
+      "verdict": "pass"
+    },
+    {
+      "signature": {
+        "norm": "layernorm",
+        "attention_type": "mla",
+        "n_kv_heads": 1,
+        "ffn": "moe",
+        "n_experts": 8,
+        "top_k": 2,
+        "activation": "silu",
+        "pos_embed": "rope"
+      },
+      "qkn_off_hash": "598d6d70b0ec",
+      "qkn_on_hash": "a5dc06a13614",
+      "qkn_off_sample": ", there was a little boy named Tim. Tim loved to play with his toys. One day, Tim went to the park w",
+      "qkn_on_sample": ", there was a little girl named Lily. She loved to play with her toys and a strong race to help. One",
+      "hamming_ratio_first_100": 0.74,
+      "lesson_collapsed": false,
+      "verdict": "pass"
+    },
+    {
+      "signature": {
+        "norm": "layernorm",
+        "attention_type": "standard",
+        "n_kv_heads": 1,
+        "ffn": "dense",
+        "n_experts": 4,
+        "top_k": 1,
+        "activation": "gelu",
+        "pos_embed": "absolute"
+      },
+      "qkn_off_hash": "f2d17ab65d31",
+      "qkn_on_hash": "85c3e0f562be",
+      "qkn_off_sample": ", there was a little girl named Lily. They liked to play with the ball and had a lot of fun. The bir",
+      "qkn_on_sample": ", there was a little girl named Lily. She loved to play with her toys and have fun. One day, he was ",
+      "hamming_ratio_first_100": 0.57,
+      "lesson_collapsed": false,
+      "verdict": "pass"
+    },
+    {
+      "signature": {
+        "norm": "layernorm",
+        "attention_type": "standard",
+        "n_kv_heads": 1,
+        "ffn": "dense",
+        "n_experts": 4,
+        "top_k": 1,
+        "activation": "gelu",
+        "pos_embed": "rope"
+      },
+      "qkn_off_hash": "a82803d34fa1",
+      "qkn_on_hash": "a5be2e0a0cd0",
+      "qkn_off_sample": ", there was a little girl named Lily. She loved to play with her toys and said, \"Let's go to the par",
+      "qkn_on_sample": ", there was a little girl named Lily. She loved to play with her toys and had a lot of fun.\nOne day,",
+      "hamming_ratio_first_100": 0.23,
+      "lesson_collapsed": false,
+      "verdict": "pass"
+    },
+    {
+      "signature": {
+        "norm": "layernorm",
+        "attention_type": "standard",
+        "n_kv_heads": 1,
+        "ffn": "dense",
+        "n_experts": 4,
+        "top_k": 1,
+        "activation": "relu2",
+        "pos_embed": "absolute"
+      },
+      "qkn_off_hash": "d6dfa1b7486e",
+      "qkn_on_hash": "5c68239b026d",
+      "qkn_off_sample": ", there was a little girl named Lily. She loved to play with her mom and dad. One day, he saw a big ",
+      "qkn_on_sample": ", there was a little girl named Lily. She loved to play with her toys and loved to play with her fri",
+      "hamming_ratio_first_100": 0.34,
+      "lesson_collapsed": false,
+      "verdict": "pass"
+    },
+    {
+      "signature": {
+        "norm": "layernorm",
+        "attention_type": "standard",
+        "n_kv_heads": 1,
+        "ffn": "dense",
+        "n_experts": 4,
+        "top_k": 1,
+        "activation": "relu2",
+        "pos_embed": "rope"
+      },
+      "qkn_off_hash": "6497e6432df2",
+      "qkn_on_hash": "dbd8927c847b",
+      "qkn_off_sample": ", there was a little girl named Lily. She loved to play with her toys and share his friends.\nOne day",
+      "qkn_on_sample": ", there was a little girl named Lily. She loved to play with her toys and have fun.\nOne day, Lily wa",
+      "hamming_ratio_first_100": 0.26,
+      "lesson_collapsed": false,
+      "verdict": "pass"
+    },
+    {
+      "signature": {
+        "norm": "layernorm",
+        "attention_type": "standard",
+        "n_kv_heads": 1,
+        "ffn": "dense",
+        "n_experts": 4,
+        "top_k": 1,
+        "activation": "silu",
+        "pos_embed": "absolute"
+      },
+      "qkn_off_hash": "965a8b000d31",
+      "qkn_on_hash": "3faef963b2e5",
+      "qkn_off_sample": ", there was a little girl named Lily. They liked to play with the park and played together. They wer",
+      "qkn_on_sample": ", there was a little girl named Lily. She liked to play with her toys and said, \"That's my started t",
+      "hamming_ratio_first_100": 0.6,
+      "lesson_collapsed": false,
+      "verdict": "pass"
+    },
+    {
+      "signature": {
+        "norm": "layernorm",
+        "attention_type": "standard",
+        "n_kv_heads": 1,
+        "ffn": "dense",
+        "n_experts": 4,
+        "top_k": 1,
+        "activation": "silu",
+        "pos_embed": "rope"
+      },
+      "qkn_off_hash": "85603fe0df0a",
+      "qkn_on_hash": "8d6ae4265bac",
+      "qkn_off_sample": ", there was a little girl named Lily. She loved to play with her toys and said, \"Thank you, Lily!\" T",
+      "qkn_on_sample": ", there was a little girl named Lily. She loved to play with her toys and have fun.\nOne day, Tom and",
+      "hamming_ratio_first_100": 0.25,
+      "lesson_collapsed": false,
+      "verdict": "pass"
+    },
+    {
+      "signature": {
+        "norm": "layernorm",
+        "attention_type": "standard",
+        "n_kv_heads": 1,
+        "ffn": "moe",
+        "n_experts": 8,
+        "top_k": 2,
+        "activation": "gelu",
+        "pos_embed": "absolute"
+      },
+      "qkn_off_hash": "762f6365f6e7",
+      "qkn_on_hash": "8bab0b32be45",
+      "qkn_off_sample": ", there was a little girl named Lily. She loved to play with her toys and her books. One day, she wa",
+      "qkn_on_sample": ", there was a little girl named Lily. She loved to play with her toys and had lots of fun.\nOne day, ",
+      "hamming_ratio_first_100": 0.23,
+      "lesson_collapsed": false,
+      "verdict": "pass"
+    },
+    {
+      "signature": {
+        "norm": "layernorm",
+        "attention_type": "standard",
+        "n_kv_heads": 1,
+        "ffn": "moe",
+        "n_experts": 8,
+        "top_k": 2,
+        "activation": "gelu",
+        "pos_embed": "rope"
+      },
+      "qkn_off_hash": "0bde45803d6c",
+      "qkn_on_hash": "2df9eca596db",
+      "qkn_off_sample": ", there was a little girl named Lily. Lily loved to play with her toys and run around in the sun.\nOn",
+      "qkn_on_sample": ", there was a little girl named Lily. She loved to play with her toys and eat yummy things. One day,",
+      "hamming_ratio_first_100": 0.6,
+      "lesson_collapsed": false,
+      "verdict": "pass"
+    },
+    {
+      "signature": {
+        "norm": "layernorm",
+        "attention_type": "standard",
+        "n_kv_heads": 1,
+        "ffn": "moe",
+        "n_experts": 8,
+        "top_k": 2,
+        "activation": "relu2",
+        "pos_embed": "absolute"
+      },
+      "qkn_off_hash": "6d5f6b7c67ce",
+      "qkn_on_hash": "e355d1b17f21",
+      "qkn_off_sample": ", there was a little girl named Lily. She loved to play with her toys and run around the park. One d",
+      "qkn_on_sample": ", there was a little girl named Lily. She loved to play with her toys. One day, she went to the park",
+      "hamming_ratio_first_100": 0.3,
+      "lesson_collapsed": false,
+      "verdict": "pass"
+    },
+    {
+      "signature": {
+        "norm": "layernorm",
+        "attention_type": "standard",
+        "n_kv_heads": 1,
+        "ffn": "moe",
+        "n_experts": 8,
+        "top_k": 2,
+        "activation": "relu2",
+        "pos_embed": "rope"
+      },
+      "qkn_off_hash": "81149a44706e",
+      "qkn_on_hash": "7ec9d6b320c4",
+      "qkn_off_sample": ", there was a little girl named Lily. She loved to play with her toys and run around in the garden. ",
+      "qkn_on_sample": ", there was a little boy named Tim. Tim loved to play with his ball in the garden. One day, he saw a",
+      "hamming_ratio_first_100": 0.77,
+      "lesson_collapsed": false,
+      "verdict": "pass"
+    },
+    {
+      "signature": {
+        "norm": "layernorm",
+        "attention_type": "standard",
+        "n_kv_heads": 1,
+        "ffn": "moe",
+        "n_experts": 8,
+        "top_k": 2,
+        "activation": "silu",
+        "pos_embed": "absolute"
+      },
+      "qkn_off_hash": "89d764b25025",
+      "qkn_on_hash": "61b024b2f691",
+      "qkn_off_sample": ", there was a little girl named Lily. She loved to play with her toys. One day, she was playing with",
+      "qkn_on_sample": ", there was a little girl named Lily. She loved to play with her toys and show her bottle. One day, ",
+      "hamming_ratio_first_100": 0.31,
+      "lesson_collapsed": false,
+      "verdict": "pass"
+    },
+    {
+      "signature": {
+        "norm": "layernorm",
+        "attention_type": "standard",
+        "n_kv_heads": 1,
+        "ffn": "moe",
+        "n_experts": 8,
+        "top_k": 2,
+        "activation": "silu",
+        "pos_embed": "rope"
+      },
+      "qkn_off_hash": "3342a44b8ca4",
+      "qkn_on_hash": "2ce789f010b7",
+      "qkn_off_sample": ", there was a little boy named Tim. Tim loved to play at the park.\nOne day, Tim saw a big red ball i",
+      "qkn_on_sample": ", there was a little boy named Tim. Tim loved to play with his toy cars. One day, he went to the par",
+      "hamming_ratio_first_100": 0.45,
+      "lesson_collapsed": false,
+      "verdict": "pass"
+    },
+    {
+      "signature": {
+        "norm": "layernorm",
+        "attention_type": "standard",
+        "n_kv_heads": 2,
+        "ffn": "dense",
+        "n_experts": 4,
+        "top_k": 1,
+        "activation": "gelu",
+        "pos_embed": "absolute"
+      },
+      "qkn_off_hash": "c3c0a4e50a5b",
+      "qkn_on_hash": "ff98ff3372a9",
+      "qkn_off_sample": ", there was a little boy named Tim. Tim loved to play with his friends. One day, the bird went to th",
+      "qkn_on_sample": ", there was a little girl named Lily. She loved to play with her toys and her friends. One day, she ",
+      "hamming_ratio_first_100": 0.78,
+      "lesson_collapsed": false,
+      "verdict": "pass"
+    },
+    {
+      "signature": {
+        "norm": "layernorm",
+        "attention_type": "standard",
+        "n_kv_heads": 2,
+        "ffn": "dense",
+        "n_experts": 4,
+        "top_k": 1,
+        "activation": "gelu",
+        "pos_embed": "rope"
+      },
+      "qkn_off_hash": "edcaa29ef476",
+      "qkn_on_hash": "63daf70097f3",
+      "qkn_off_sample": ", there was a little boy named Tim. Tim loved to play with his friends when the sun went down. The b",
+      "qkn_on_sample": ", there was a little girl named Lily. She loved to play with her toys and have fun. One day, she was",
+      "hamming_ratio_first_100": 0.77,
+      "lesson_collapsed": false,
+      "verdict": "pass"
+    },
+    {
+      "signature": {
+        "norm": "layernorm",
+        "attention_type": "standard",
+        "n_kv_heads": 2,
+        "ffn": "dense",
+        "n_experts": 4,
+        "top_k": 1,
+        "activation": "relu2",
+        "pos_embed": "absolute"
+      },
+      "qkn_off_hash": "3a0ed883f53c",
+      "qkn_on_hash": "68f43608db45",
+      "qkn_off_sample": ", there was a little girl named Lily. She loved to play with her mom and dad. They liked to play wit",
+      "qkn_on_sample": ", there was a little boy named Tim. Tim loved to play with his friends. One day, he saw a big box of",
+      "hamming_ratio_first_100": 0.78,
+      "lesson_collapsed": false,
+      "verdict": "pass"
+    },
+    {
+      "signature": {
+        "norm": "layernorm",
+        "attention_type": "standard",
+        "n_kv_heads": 2,
+        "ffn": "dense",
+        "n_experts": 4,
+        "top_k": 1,
+        "activation": "relu2",
+        "pos_embed": "rope"
+      },
+      "qkn_off_hash": "54657c0139a7",
+      "qkn_on_hash": "932e09a714e2",
+      "qkn_off_sample": ", there was a little girl named Lily. She loved to play with her toys and shout. One day, she went t",
+      "qkn_on_sample": ", there was a little girl named Lily. She loved to play with her toys and they lived happily ever af",
+      "hamming_ratio_first_100": 0.22,
+      "lesson_collapsed": false,
+      "verdict": "pass"
+    },
+    {
+      "signature": {
+        "norm": "layernorm",
+        "attention_type": "standard",
+        "n_kv_heads": 2,
+        "ffn": "dense",
+        "n_experts": 4,
+        "top_k": 1,
+        "activation": "silu",
+        "pos_embed": "absolute"
+      },
+      "qkn_off_hash": "5ed289c46818",
+      "qkn_on_hash": "163bc95df02b",
+      "qkn_off_sample": ", there was a little girl named Lily. She loved to play with her friends and they were to see their ",
+      "qkn_on_sample": ", there was a little girl named Lily. She loved to play with her toys and said, \"I want to play with",
+      "hamming_ratio_first_100": 0.34,
+      "lesson_collapsed": false,
+      "verdict": "pass"
+    },
+    {
+      "signature": {
+        "norm": "layernorm",
+        "attention_type": "standard",
+        "n_kv_heads": 2,
+        "ffn": "dense",
+        "n_experts": 4,
+        "top_k": 1,
+        "activation": "silu",
+        "pos_embed": "rope"
+      },
+      "qkn_off_hash": "cf29dfe936bc",
+      "qkn_on_hash": "156bff4647a3",
+      "qkn_off_sample": ", there was a little girl named Lily. She loved to play with her toys and said, \"Thank you, Mr. I wa",
+      "qkn_on_sample": ", there was a little boy named Tim. Tim loved to play with his friends and said, \"Tim, what are you ",
+      "hamming_ratio_first_100": 0.74,
+      "lesson_collapsed": false,
+      "verdict": "pass"
+    },
+    {
+      "signature": {
+        "norm": "layernorm",
+        "attention_type": "standard",
+        "n_kv_heads": 2,
+        "ffn": "moe",
+        "n_experts": 8,
+        "top_k": 2,
+        "activation": "gelu",
+        "pos_embed": "absolute"
+      },
+      "qkn_off_hash": "90f2a647397e",
+      "qkn_on_hash": "88f9fd388e20",
+      "qkn_off_sample": ", there was a little boy named Tim. Tim loved to play with his toy car and run around the house. Tim",
+      "qkn_on_sample": ", there was a little boy named Tim. Tim loved to play with his ball. One day, he saw a big box of ca",
+      "hamming_ratio_first_100": 0.36,
+      "lesson_collapsed": false,
+      "verdict": "pass"
+    },
+    {
+      "signature": {
+        "norm": "layernorm",
+        "attention_type": "standard",
+        "n_kv_heads": 2,
+        "ffn": "moe",
+        "n_experts": 8,
+        "top_k": 2,
+        "activation": "gelu",
+        "pos_embed": "rope"
+      },
+      "qkn_off_hash": "0e4d9e5b2c4f",
+      "qkn_on_hash": "3d00ec397f08",
+      "qkn_off_sample": ", there was a little boy named Tim. Tim loved to play with his ball. One day, he saw a big dog in th",
+      "qkn_on_sample": ", there was a little boy named Tim. Tim loved to play with his toy truck. One day, Tim saw a big box",
+      "hamming_ratio_first_100": 0.34,
+      "lesson_collapsed": false,
+      "verdict": "pass"
+    },
+    {
+      "signature": {
+        "norm": "layernorm",
+        "attention_type": "standard",
+        "n_kv_heads": 2,
+        "ffn": "moe",
+        "n_experts": 8,
+        "top_k": 2,
+        "activation": "relu2",
+        "pos_embed": "absolute"
+      },
+      "qkn_off_hash": "a65e54a42e31",
+      "qkn_on_hash": "3aee10e6aef6",
+      "qkn_off_sample": ", there was a little boy named Tim. Tim loved to play with his friends. One day, he saw a big box of",
+      "qkn_on_sample": ", there was a little boy named Tim. Tim loved to play with his ball and run around. One day, he went",
+      "hamming_ratio_first_100": 0.33,
+      "lesson_collapsed": false,
+      "verdict": "pass"
+    },
+    {
+      "signature": {
+        "norm": "layernorm",
+        "attention_type": "standard",
+        "n_kv_heads": 2,
+        "ffn": "moe",
+        "n_experts": 8,
+        "top_k": 2,
+        "activation": "relu2",
+        "pos_embed": "rope"
+      },
+      "qkn_off_hash": "5d030f52d9ba",
+      "qkn_on_hash": "f01baa8fd4b5",
+      "qkn_off_sample": ", there was a little boy named Tim. Tim loved to play with his toys. One day, he saw a big bird on t",
+      "qkn_on_sample": ", there was a little boy named Tim. Tim loved to play with his ball and run in the park. One day, Ti",
+      "hamming_ratio_first_100": 0.37,
+      "lesson_collapsed": false,
+      "verdict": "pass"
+    },
+    {
+      "signature": {
+        "norm": "layernorm",
+        "attention_type": "standard",
+        "n_kv_heads": 2,
+        "ffn": "moe",
+        "n_experts": 8,
+        "top_k": 2,
+        "activation": "silu",
+        "pos_embed": "absolute"
+      },
+      "qkn_off_hash": "2e64be3660fa",
+      "qkn_on_hash": "a3618af56f8a",
+      "qkn_off_sample": ", there was a little boy named Tim. Tim loved to play with his ball. One day, he saw a big bird on t",
+      "qkn_on_sample": ", there was a little boy named Tim. Tim loved to play with his toy cars. One day, Tim went to the pa",
+      "hamming_ratio_first_100": 0.35,
+      "lesson_collapsed": false,
+      "verdict": "pass"
+    },
+    {
+      "signature": {
+        "norm": "layernorm",
+        "attention_type": "standard",
+        "n_kv_heads": 2,
+        "ffn": "moe",
+        "n_experts": 8,
+        "top_k": 2,
+        "activation": "silu",
+        "pos_embed": "rope"
+      },
+      "qkn_off_hash": "c2e3f6387294",
+      "qkn_on_hash": "c8167775098a",
+      "qkn_off_sample": ", there was a little boy named Tim. Tim loved to play outside in the sun. One day, he saw a big tree",
+      "qkn_on_sample": ", there was a little girl named Lily. She loved to play with her toys and explore her pretty that we",
+      "hamming_ratio_first_100": 0.72,
+      "lesson_collapsed": false,
+      "verdict": "pass"
+    },
+    {
+      "signature": {
+        "norm": "layernorm",
+        "attention_type": "standard",
+        "n_kv_heads": 8,
+        "ffn": "dense",
+        "n_experts": 4,
+        "top_k": 1,
+        "activation": "gelu",
+        "pos_embed": "absolute"
+      },
+      "qkn_off_hash": "ac676a9f2645",
+      "qkn_on_hash": "d2707c76e5dd",
+      "qkn_off_sample": ", there was a little girl named Lily. She loved to play with her toys and said, \"I want to play with",
+      "qkn_on_sample": ", there was a little girl named Lucy. She loved to play with her toys and said, \"I will help you for",
+      "hamming_ratio_first_100": 0.16,
+      "lesson_collapsed": false,
+      "verdict": "pass"
+    },
+    {
+      "signature": {
+        "norm": "layernorm",
+        "attention_type": "standard",
+        "n_kv_heads": 8,
+        "ffn": "dense",
+        "n_experts": 4,
+        "top_k": 1,
+        "activation": "gelu",
+        "pos_embed": "rope"
+      },
+      "qkn_off_hash": "875269a52769",
+      "qkn_on_hash": "f82dd4332838",
+      "qkn_off_sample": ", there was a little boy named Tim. Tim loved to play with his friends. One day, he was playing with",
+      "qkn_on_sample": ", there was a little girl named Lily. She loved to play with her toy animals. One day, she was playi",
+      "hamming_ratio_first_100": 0.78,
+      "lesson_collapsed": false,
+      "verdict": "pass"
+    },
+    {
+      "signature": {
+        "norm": "layernorm",
+        "attention_type": "standard",
+        "n_kv_heads": 8,
+        "ffn": "dense",
+        "n_experts": 4,
+        "top_k": 1,
+        "activation": "relu2",
+        "pos_embed": "absolute"
+      },
+      "qkn_off_hash": "5490c310a40d",
+      "qkn_on_hash": "5b560197499e",
+      "qkn_off_sample": ", there was a little boy named Tim. Tim was very happy. He wanted to play with the ball and the bird",
+      "qkn_on_sample": ", there was a little girl named Lily. She loved to play with her toys and loved to play with it. One",
+      "hamming_ratio_first_100": 0.72,
+      "lesson_collapsed": false,
+      "verdict": "pass"
+    },
+    {
+      "signature": {
+        "norm": "layernorm",
+        "attention_type": "standard",
+        "n_kv_heads": 8,
+        "ffn": "dense",
+        "n_experts": 4,
+        "top_k": 1,
+        "activation": "relu2",
+        "pos_embed": "rope"
+      },
+      "qkn_off_hash": "f760b9665797",
+      "qkn_on_hash": "8aa606d2ce0e",
+      "qkn_off_sample": ", there was a little girl named Lily. She loved to play with her toys and saw a big tree. She wanted",
+      "qkn_on_sample": ", there was a little girl named Lucy. She loved to play with her toys and explore the park.\nOne day,",
+      "hamming_ratio_first_100": 0.28,
+      "lesson_collapsed": false,
+      "verdict": "pass"
+    },
+    {
+      "signature": {
+        "norm": "layernorm",
+        "attention_type": "standard",
+        "n_kv_heads": 8,
+        "ffn": "dense",
+        "n_experts": 4,
+        "top_k": 1,
+        "activation": "silu",
+        "pos_embed": "absolute"
+      },
+      "qkn_off_hash": "e04bb4fa6b97",
+      "qkn_on_hash": "4512d49e0a45",
+      "qkn_off_sample": ", there was a little girl named Lily. She loved to play with her toys and said, \"I want to play with",
+      "qkn_on_sample": ", there was a little boy named Tim. Tim loved to play with his friends. One day, he was very excited",
+      "hamming_ratio_first_100": 0.77,
+      "lesson_collapsed": false,
+      "verdict": "pass"
+    },
+    {
+      "signature": {
+        "norm": "layernorm",
+        "attention_type": "standard",
+        "n_kv_heads": 8,
+        "ffn": "dense",
+        "n_experts": 4,
+        "top_k": 1,
+        "activation": "silu",
+        "pos_embed": "rope"
+      },
+      "qkn_off_hash": "a3318c818087",
+      "qkn_on_hash": "c5bfc0407d47",
+      "qkn_off_sample": ", there was a little boy named Tim. Tim loved to play with his friends. One day, he went to the park",
+      "qkn_on_sample": ", there was a little boy named Tim. Tim loved to play with his toy cars. One day, he went to the par",
+      "hamming_ratio_first_100": 0.37,
+      "lesson_collapsed": false,
+      "verdict": "pass"
+    },
+    {
+      "signature": {
+        "norm": "layernorm",
+        "attention_type": "standard",
+        "n_kv_heads": 8,
+        "ffn": "moe",
+        "n_experts": 8,
+        "top_k": 2,
+        "activation": "gelu",
+        "pos_embed": "absolute"
+      },
+      "qkn_off_hash": "8c6cd1960032",
+      "qkn_on_hash": "c1391ba35874",
+      "qkn_off_sample": ", there was a little girl named Lily. She loved to play with her toys and show her friends. One day,",
+      "qkn_on_sample": ", there was a little girl named Lily. Lily loved to eat pastry. One day, she went to the park with h",
+      "hamming_ratio_first_100": 0.59,
+      "lesson_collapsed": false,
+      "verdict": "pass"
+    },
+    {
+      "signature": {
+        "norm": "layernorm",
+        "attention_type": "standard",
+        "n_kv_heads": 8,
+        "ffn": "moe",
+        "n_experts": 8,
+        "top_k": 2,
+        "activation": "gelu",
+        "pos_embed": "rope"
+      },
+      "qkn_off_hash": "73d43e2dcc75",
+      "qkn_on_hash": "383a7cba5156",
+      "qkn_off_sample": ", there was a little boy named Tim. Tim loved to play with his toy car. One day, Tim saw a big dog n",
+      "qkn_on_sample": ", there was a little boy named Tim. Tim loved to play with his toy cars. One day, Tim saw a big rock",
+      "hamming_ratio_first_100": 0.3,
+      "lesson_collapsed": false,
+      "verdict": "pass"
+    },
+    {
+      "signature": {
+        "norm": "layernorm",
+        "attention_type": "standard",
+        "n_kv_heads": 8,
+        "ffn": "moe",
+        "n_experts": 8,
+        "top_k": 2,
+        "activation": "relu2",
+        "pos_embed": "absolute"
+      },
+      "qkn_off_hash": "3e1cca2bd82e",
+      "qkn_on_hash": "8dc5042d5c85",
+      "qkn_off_sample": ", there was a little girl named Lily. She loved to eat bread and was very strong. One day, she went ",
+      "qkn_on_sample": ", there was a little girl named Lily. Lily loved to eat pretty for her bird. One day, she went to th",
+      "hamming_ratio_first_100": 0.58,
+      "lesson_collapsed": false,
+      "verdict": "pass"
+    },
+    {
+      "signature": {
+        "norm": "layernorm",
+        "attention_type": "standard",
+        "n_kv_heads": 8,
+        "ffn": "moe",
+        "n_experts": 8,
+        "top_k": 2,
+        "activation": "relu2",
+        "pos_embed": "rope"
+      },
+      "qkn_off_hash": "d961c370c0eb",
+      "qkn_on_hash": "8832faccfd86",
+      "qkn_off_sample": ", there was a little girl named Lily. She loved to play with her toys and explore her big house.\nOne",
+      "qkn_on_sample": ", there was a little boy named Tim. Tim loved to play with his ball in the park.\nOne day, Tim saw a ",
+      "hamming_ratio_first_100": 0.76,
+      "lesson_collapsed": false,
+      "verdict": "pass"
+    },
+    {
+      "signature": {
+        "norm": "layernorm",
+        "attention_type": "standard",
+        "n_kv_heads": 8,
+        "ffn": "moe",
+        "n_experts": 8,
+        "top_k": 2,
+        "activation": "silu",
+        "pos_embed": "absolute"
+      },
+      "qkn_off_hash": "5a83fdda9c49",
+      "qkn_on_hash": "fc0508823a29",
+      "qkn_off_sample": ", there was a little boy named Tim. Tim loved to play with his ball and new things. One day, Tim saw",
+      "qkn_on_sample": ", there was a little girl named Lily. Lily loved to play with her toys and eat yummy friends. One da",
+      "hamming_ratio_first_100": 0.76,
+      "lesson_collapsed": false,
+      "verdict": "pass"
+    },
+    {
+      "signature": {
+        "norm": "layernorm",
+        "attention_type": "standard",
+        "n_kv_heads": 8,
+        "ffn": "moe",
+        "n_experts": 8,
+        "top_k": 2,
+        "activation": "silu",
+        "pos_embed": "rope"
+      },
+      "qkn_off_hash": "2e840eba79f9",
+      "qkn_on_hash": "a778073bf458",
+      "qkn_off_sample": ", there was a little girl named Lily. She loved to eat bread with her toy animals. One day, she was ",
+      "qkn_on_sample": ", there was a little girl named Lily. She loved to cook with her mom. One day, she went to the park ",
+      "hamming_ratio_first_100": 0.44,
+      "lesson_collapsed": false,
+      "verdict": "pass"
+    },
+    {
+      "signature": {
+        "norm": "rmsnorm",
+        "attention_type": "mla",
+        "n_kv_heads": 1,
+        "ffn": "dense",
+        "n_experts": 4,
+        "top_k": 1,
+        "activation": "gelu",
+        "pos_embed": "rope"
+      },
+      "qkn_off_hash": "c1965d6be273",
+      "qkn_on_hash": "51af571f1e91",
+      "qkn_off_sample": ", there was a little girl named Lily. She loved to play with her toys and said, \"Thank you, Tom! I w",
+      "qkn_on_sample": ", there was a little girl named Lily. She loved to play with her toys and had a great time. They wer",
+      "hamming_ratio_first_100": 0.2,
+      "lesson_collapsed": false,
+      "verdict": "pass"
+    },
+    {
+      "signature": {
+        "norm": "rmsnorm",
+        "attention_type": "mla",
+        "n_kv_heads": 1,
+        "ffn": "dense",
+        "n_experts": 4,
+        "top_k": 1,
+        "activation": "relu2",
+        "pos_embed": "rope"
+      },
+      "qkn_off_hash": "9d3f166785f6",
+      "qkn_on_hash": "ec84382ae8a0",
+      "qkn_off_sample": ", there was a little girl named Lily. She loved to play with his friends. The bird was so happy to h",
+      "qkn_on_sample": ", there was a little boy named Tim. Tim loved to play with his ball and all day. One day, he went to",
+      "hamming_ratio_first_100": 0.73,
+      "lesson_collapsed": false,
+      "verdict": "pass"
+    },
+    {
+      "signature": {
+        "norm": "rmsnorm",
+        "attention_type": "mla",
+        "n_kv_heads": 1,
+        "ffn": "dense",
+        "n_experts": 4,
+        "top_k": 1,
+        "activation": "silu",
+        "pos_embed": "rope"
+      },
+      "qkn_off_hash": "f7849f2b5b4a",
+      "qkn_on_hash": "2ee9fcd0d813",
+      "qkn_off_sample": ", there was a little girl named Lily. She loved to play with her toys and said, \"I will help you for",
+      "qkn_on_sample": ", there was a little girl named Lily. She loved to play with his friends. They played together every",
+      "hamming_ratio_first_100": 0.35,
+      "lesson_collapsed": false,
+      "verdict": "pass"
+    },
+    {
+      "signature": {
+        "norm": "rmsnorm",
+        "attention_type": "mla",
+        "n_kv_heads": 1,
+        "ffn": "moe",
+        "n_experts": 8,
+        "top_k": 2,
+        "activation": "gelu",
+        "pos_embed": "rope"
+      },
+      "qkn_off_hash": "10626a9a7fff",
+      "qkn_on_hash": "fc60eae294d5",
+      "qkn_off_sample": ", there was a little boy named Tim. Tim loved to play with his friends. One day, Tim went to the par",
+      "qkn_on_sample": ", there was a little boy named Tim. Tim loved to play with his toy cars. One day, he saw a big rock ",
+      "hamming_ratio_first_100": 0.36,
+      "lesson_collapsed": false,
+      "verdict": "pass"
+    },
+    {
+      "signature": {
+        "norm": "rmsnorm",
+        "attention_type": "mla",
+        "n_kv_heads": 1,
+        "ffn": "moe",
+        "n_experts": 8,
+        "top_k": 2,
+        "activation": "relu2",
+        "pos_embed": "rope"
+      },
+      "qkn_off_hash": "36392916576e",
+      "qkn_on_hash": "a9ae0e6d1c4b",
+      "qkn_off_sample": ", there was a little girl named Lily. She had a big house with a big box. The baby bird said, \"Hello",
+      "qkn_on_sample": ", there was a little girl named Lily. She loved to play with her toys and share it with his friends.",
+      "hamming_ratio_first_100": 0.5,
+      "lesson_collapsed": false,
+      "verdict": "pass"
+    },
+    {
+      "signature": {
+        "norm": "rmsnorm",
+        "attention_type": "mla",
+        "n_kv_heads": 1,
+        "ffn": "moe",
+        "n_experts": 8,
+        "top_k": 2,
+        "activation": "silu",
+        "pos_embed": "rope"
+      },
+      "qkn_off_hash": "16748b3e0d7f",
+      "qkn_on_hash": "ba0ead3b0f31",
+      "qkn_off_sample": ", there was a little boy named Tim. Tim liked to play with his toys. One day, he saw a big box in th",
+      "qkn_on_sample": ", there was a little girl named Lily. She loved to play with her toys and have fun to eat.\nOne day, ",
+      "hamming_ratio_first_100": 0.77,
+      "lesson_collapsed": false,
+      "verdict": "pass"
+    },
+    {
+      "signature": {
+        "norm": "rmsnorm",
+        "attention_type": "standard",
+        "n_kv_heads": 1,
+        "ffn": "dense",
+        "n_experts": 4,
+        "top_k": 1,
+        "activation": "gelu",
+        "pos_embed": "absolute"
+      },
+      "qkn_off_hash": "149d7f2ee2c5",
+      "qkn_on_hash": "8c1d9b5210bb",
+      "qkn_off_sample": ", there was a little girl named Lily. She was very sad and said, \"Thank you, Tim! I want to play wit",
+      "qkn_on_sample": ", there was a little girl named Lily. She loved to play with her toys and said, \"Thank you, Lily. I ",
+      "hamming_ratio_first_100": 0.54,
+      "lesson_collapsed": false,
+      "verdict": "pass"
+    },
+    {
+      "signature": {
+        "norm": "rmsnorm",
+        "attention_type": "standard",
+        "n_kv_heads": 1,
+        "ffn": "dense",
+        "n_experts": 4,
+        "top_k": 1,
+        "activation": "gelu",
+        "pos_embed": "rope"
+      },
+      "qkn_off_hash": "c53ed3f72ce1",
+      "qkn_on_hash": "535f2dcc839a",
+      "qkn_off_sample": ", there was a little girl named Lily. She loved to play with her toys and said, \"Thank you, Lily. I ",
+      "qkn_on_sample": ", there was a little girl named Lily. She loved to play with her toys and had lots of fun.\nOne day, ",
+      "hamming_ratio_first_100": 0.24,
+      "lesson_collapsed": false,
+      "verdict": "pass"
+    },
+    {
+      "signature": {
+        "norm": "rmsnorm",
+        "attention_type": "standard",
+        "n_kv_heads": 1,
+        "ffn": "dense",
+        "n_experts": 4,
+        "top_k": 1,
+        "activation": "relu2",
+        "pos_embed": "absolute"
+      },
+      "qkn_off_hash": "03dd86ce8c03",
+      "qkn_on_hash": "04a68f747959",
+      "qkn_off_sample": ", there was a little girl named Lily. She loved to play with his friends. One day, he saw a big box ",
+      "qkn_on_sample": ", there was a little girl named Lucy. She was very happy and said, \"I will help you find my friends.",
+      "hamming_ratio_first_100": 0.55,
+      "lesson_collapsed": false,
+      "verdict": "pass"
+    },
+    {
+      "signature": {
+        "norm": "rmsnorm",
+        "attention_type": "standard",
+        "n_kv_heads": 1,
+        "ffn": "dense",
+        "n_experts": 4,
+        "top_k": 1,
+        "activation": "relu2",
+        "pos_embed": "rope"
+      },
+      "qkn_off_hash": "2c6c4875a128",
+      "qkn_on_hash": "aa2d63681185",
+      "qkn_off_sample": ", there was a little girl named Lily. She loved to play with her toys and play with her mom.\nOne day",
+      "qkn_on_sample": ", there was a little girl named Lily. She loved to play with her toys and had lots of fun.\nOne day, ",
+      "hamming_ratio_first_100": 0.26,
+      "lesson_collapsed": false,
+      "verdict": "pass"
+    },
+    {
+      "signature": {
+        "norm": "rmsnorm",
+        "attention_type": "standard",
+        "n_kv_heads": 1,
+        "ffn": "dense",
+        "n_experts": 4,
+        "top_k": 1,
+        "activation": "silu",
+        "pos_embed": "absolute"
+      },
+      "qkn_off_hash": "8801b2971e2b",
+      "qkn_on_hash": "ba9e6c97b70f",
+      "qkn_off_sample": ", there was a little girl named Lily. She loved to play with her mom and said, \"Thank you, Tim! I wi",
+      "qkn_on_sample": ", there was a little boy named Tim. Tim loved to play with his friends. One day, Tim saw a big box o",
+      "hamming_ratio_first_100": 0.75,
+      "lesson_collapsed": false,
+      "verdict": "pass"
+    },
+    {
+      "signature": {
+        "norm": "rmsnorm",
+        "attention_type": "standard",
+        "n_kv_heads": 1,
+        "ffn": "dense",
+        "n_experts": 4,
+        "top_k": 1,
+        "activation": "silu",
+        "pos_embed": "rope"
+      },
+      "qkn_off_hash": "3a632d82ae4d",
+      "qkn_on_hash": "09646ada0379",
+      "qkn_off_sample": ", there was a little girl named Lily. She loved to play with her toys and said, \"I will help you.\" T",
+      "qkn_on_sample": ", there was a little girl named Lily. She loved to play with her toys and had lots of fun.\nOne day, ",
+      "hamming_ratio_first_100": 0.24,
+      "lesson_collapsed": false,
+      "verdict": "pass"
+    },
+    {
+      "signature": {
+        "norm": "rmsnorm",
+        "attention_type": "standard",
+        "n_kv_heads": 1,
+        "ffn": "moe",
+        "n_experts": 8,
+        "top_k": 2,
+        "activation": "gelu",
+        "pos_embed": "absolute"
+      },
+      "qkn_off_hash": "d8de756593a6",
+      "qkn_on_hash": "86e2d5655c4c",
+      "qkn_off_sample": ", there was a little girl named Lily. She loved to play with her toys and explore the world around h",
+      "qkn_on_sample": ", there was a little girl named Lily. She loved to play with her toys and run around the water. One ",
+      "hamming_ratio_first_100": 0.24,
+      "lesson_collapsed": false,
+      "verdict": "pass"
+    },
+    {
+      "signature": {
+        "norm": "rmsnorm",
+        "attention_type": "standard",
+        "n_kv_heads": 1,
+        "ffn": "moe",
+        "n_experts": 8,
+        "top_k": 2,
+        "activation": "gelu",
+        "pos_embed": "rope"
+      },
+      "qkn_off_hash": "5c0930344de5",
+      "qkn_on_hash": "4338ab57f578",
+      "qkn_off_sample": ", there was a little boy named Tim. Tim was a very lucky boy because he had a bandage on a alley.\nOn",
+      "qkn_on_sample": ", there was a little girl named Lily. She loved to play with her toys and run around in the palace g",
+      "hamming_ratio_first_100": 0.75,
+      "lesson_collapsed": false,
+      "verdict": "pass"
+    },
+    {
+      "signature": {
+        "norm": "rmsnorm",
+        "attention_type": "standard",
+        "n_kv_heads": 1,
+        "ffn": "moe",
+        "n_experts": 8,
+        "top_k": 2,
+        "activation": "relu2",
+        "pos_embed": "absolute"
+      },
+      "qkn_off_hash": "23f005d83a54",
+      "qkn_on_hash": "7d0ce4ddf152",
+      "qkn_off_sample": ", there was a little girl named Lily. Lily loved to play with her toys and she would put it on her b",
+      "qkn_on_sample": ", there was a little girl named Lily. She loved to play with her toys and the birds. One day, Lily w",
+      "hamming_ratio_first_100": 0.59,
+      "lesson_collapsed": false,
+      "verdict": "pass"
+    },
+    {
+      "signature": {
+        "norm": "rmsnorm",
+        "attention_type": "standard",
+        "n_kv_heads": 1,
+        "ffn": "moe",
+        "n_experts": 8,
+        "top_k": 2,
+        "activation": "relu2",
+        "pos_embed": "rope"
+      },
+      "qkn_off_hash": "f2be0018122c",
+      "qkn_on_hash": "a2c53431b03a",
+      "qkn_off_sample": ", there was a little girl named Lily. She loved to play with her toys and get new ones. One day, she",
+      "qkn_on_sample": ", there was a little girl named Lily. She loved to play with her toys and run around in the park. On",
+      "hamming_ratio_first_100": 0.21,
+      "lesson_collapsed": false,
+      "verdict": "pass"
+    },
+    {
+      "signature": {
+        "norm": "rmsnorm",
+        "attention_type": "standard",
+        "n_kv_heads": 1,
+        "ffn": "moe",
+        "n_experts": 8,
+        "top_k": 2,
+        "activation": "silu",
+        "pos_embed": "absolute"
+      },
+      "qkn_off_hash": "9254fe39edf3",
+      "qkn_on_hash": "16b38a57dc06",
+      "qkn_off_sample": ", there was a little girl named Lily. She loved to play with her toys and her books. One day, she fo",
+      "qkn_on_sample": ", there was a little girl named Lily. She loved to play with her toys and together. One day, she saw",
+      "hamming_ratio_first_100": 0.26,
+      "lesson_collapsed": false,
+      "verdict": "pass"
+    },
+    {
+      "signature": {
+        "norm": "rmsnorm",
+        "attention_type": "standard",
+        "n_kv_heads": 1,
+        "ffn": "moe",
+        "n_experts": 8,
+        "top_k": 2,
+        "activation": "silu",
+        "pos_embed": "rope"
+      },
+      "qkn_off_hash": "06681b3bb34d",
+      "qkn_on_hash": "a8ee8c07ec92",
+      "qkn_off_sample": ", there was a little boy named Tim. Tim loved to play with his toy cars.\nOne day, Tim saw a big tree",
+      "qkn_on_sample": ", there was a little girl named Lily. She loved to eat bananas and the box. One day, Lily was playin",
+      "hamming_ratio_first_100": 0.75,
+      "lesson_collapsed": false,
+      "verdict": "pass"
+    },
+    {
+      "signature": {
+        "norm": "rmsnorm",
+        "attention_type": "standard",
+        "n_kv_heads": 2,
+        "ffn": "dense",
+        "n_experts": 4,
+        "top_k": 1,
+        "activation": "gelu",
+        "pos_embed": "absolute"
+      },
+      "qkn_off_hash": "42ccca60b8ab",
+      "qkn_on_hash": "cd10849655a7",
+      "qkn_off_sample": ", there was a little boy named Tim. Tim loved to play with his friends and had a big box. The bird w",
+      "qkn_on_sample": ", there was a little girl named Lily. She loved to play with her toys and had lots of fun. One day, ",
+      "hamming_ratio_first_100": 0.78,
+      "lesson_collapsed": false,
+      "verdict": "pass"
+    },
+    {
+      "signature": {
+        "norm": "rmsnorm",
+        "attention_type": "standard",
+        "n_kv_heads": 2,
+        "ffn": "dense",
+        "n_experts": 4,
+        "top_k": 1,
+        "activation": "gelu",
+        "pos_embed": "rope"
+      },
+      "qkn_off_hash": "ad6d77b60bb5",
+      "qkn_on_hash": "650462cdc452",
+      "qkn_off_sample": ", there was a little girl named Lily. She loved to play with her toys and have fun. One day, she was",
+      "qkn_on_sample": ", there was a little boy named Tim. Tim loved to play with his friends. One day, he saw a big box on",
+      "hamming_ratio_first_100": 0.76,
+      "lesson_collapsed": false,
+      "verdict": "pass"
+    },
+    {
+      "signature": {
+        "norm": "rmsnorm",
+        "attention_type": "standard",
+        "n_kv_heads": 2,
+        "ffn": "dense",
+        "n_experts": 4,
+        "top_k": 1,
+        "activation": "relu2",
+        "pos_embed": "absolute"
+      },
+      "qkn_off_hash": "3bb3b14a07ec",
+      "qkn_on_hash": "7136617163a6",
+      "qkn_off_sample": ", there was a little girl named Lily. She loved to play with her toys and said, \"I will help you too",
+      "qkn_on_sample": ", there was a little girl named Lily. She loved to play with her toys and had a big stick. One day, ",
+      "hamming_ratio_first_100": 0.24,
+      "lesson_collapsed": false,
+      "verdict": "pass"
+    },
+    {
+      "signature": {
+        "norm": "rmsnorm",
+        "attention_type": "standard",
+        "n_kv_heads": 2,
+        "ffn": "dense",
+        "n_experts": 4,
+        "top_k": 1,
+        "activation": "relu2",
+        "pos_embed": "rope"
+      },
+      "qkn_off_hash": "71b9a28924f9",
+      "qkn_on_hash": "29034d9ff9db",
+      "qkn_off_sample": ", there was a little boy named Tim. Tim loved to play with his toys and the bird were best friends.\n",
+      "qkn_on_sample": ", there was a little boy named Tim. Tim loved to play with his friends and had lots of fun. One day,",
+      "hamming_ratio_first_100": 0.35,
+      "lesson_collapsed": false,
+      "verdict": "pass"
+    },
+    {
+      "signature": {
+        "norm": "rmsnorm",
+        "attention_type": "standard",
+        "n_kv_heads": 2,
+        "ffn": "dense",
+        "n_experts": 4,
+        "top_k": 1,
+        "activation": "silu",
+        "pos_embed": "absolute"
+      },
+      "qkn_off_hash": "60263d286117",
+      "qkn_on_hash": "b0f86987a9e1",
+      "qkn_off_sample": ", there was a little girl named Lily. She loved to play with her mom and dad said, \"I will the big b",
+      "qkn_on_sample": ", there was a little girl named Lily. She loved to play with her toys and loved to play with her toy",
+      "hamming_ratio_first_100": 0.33,
+      "lesson_collapsed": false,
+      "verdict": "pass"
+    },
+    {
+      "signature": {
+        "norm": "rmsnorm",
+        "attention_type": "standard",
+        "n_kv_heads": 2,
+        "ffn": "dense",
+        "n_experts": 4,
+        "top_k": 1,
+        "activation": "silu",
+        "pos_embed": "rope"
+      },
+      "qkn_off_hash": "2e496239d275",
+      "qkn_on_hash": "1156ecaaed5e",
+      "qkn_off_sample": ", there was a little girl named Lily. She loved to play with her toys and share her toys. One day, s",
+      "qkn_on_sample": ", there was a little boy named Tim. Tim loved to play with his friends. One day, Tim saw a big tree.",
+      "hamming_ratio_first_100": 0.78,
+      "lesson_collapsed": false,
+      "verdict": "pass"
+    },
+    {
+      "signature": {
+        "norm": "rmsnorm",
+        "attention_type": "standard",
+        "n_kv_heads": 2,
+        "ffn": "moe",
+        "n_experts": 8,
+        "top_k": 2,
+        "activation": "gelu",
+        "pos_embed": "absolute"
+      },
+      "qkn_off_hash": "af686f8304b0",
+      "qkn_on_hash": "190f10512ba7",
+      "qkn_off_sample": ", there was a little boy named Tim. Tim loved to play with his friends. One day, Tim went to the par",
+      "qkn_on_sample": ", there was a little boy named Tim. Tim loved to play with his ball and run around the house. One da",
+      "hamming_ratio_first_100": 0.35,
+      "lesson_collapsed": false,
+      "verdict": "pass"
+    },
+    {
+      "signature": {
+        "norm": "rmsnorm",
+        "attention_type": "standard",
+        "n_kv_heads": 2,
+        "ffn": "moe",
+        "n_experts": 8,
+        "top_k": 2,
+        "activation": "gelu",
+        "pos_embed": "rope"
+      },
+      "qkn_off_hash": "b81d444a2a4a",
+      "qkn_on_hash": "a27967f5178c",
+      "qkn_off_sample": ", there was a little boy named Tim. Tim loved to play outside. One day, he went to the park with his",
+      "qkn_on_sample": ", there was a little boy named Tim. Tim loved to play and run all day. One day, he went to the park ",
+      "hamming_ratio_first_100": 0.42,
+      "lesson_collapsed": false,
+      "verdict": "pass"
+    },
+    {
+      "signature": {
+        "norm": "rmsnorm",
+        "attention_type": "standard",
+        "n_kv_heads": 2,
+        "ffn": "moe",
+        "n_experts": 8,
+        "top_k": 2,
+        "activation": "relu2",
+        "pos_embed": "absolute"
+      },
+      "qkn_off_hash": "beb78184e4a2",
+      "qkn_on_hash": "704d73b68c6c",
+      "qkn_off_sample": ", there was a little boy named Tim. Tim loved to play with his ball and wanted to play with it. One ",
+      "qkn_on_sample": ", there was a little boy named Tim. Tim loved to play with his friends. One day, he saw a big truck ",
+      "hamming_ratio_first_100": 0.35,
+      "lesson_collapsed": false,
+      "verdict": "pass"
+    },
+    {
+      "signature": {
+        "norm": "rmsnorm",
+        "attention_type": "standard",
+        "n_kv_heads": 2,
+        "ffn": "moe",
+        "n_experts": 8,
+        "top_k": 2,
+        "activation": "relu2",
+        "pos_embed": "rope"
+      },
+      "qkn_off_hash": "192656b4e7bd",
+      "qkn_on_hash": "b943ba6cc373",
+      "qkn_off_sample": ", there was a little boy named Tim. Tim loved to play with his toy car. One day, Tim saw a big tree ",
+      "qkn_on_sample": ", there was a little girl named Lily. Lily loved to play with her toys and said it loved to play wit",
+      "hamming_ratio_first_100": 0.76,
+      "lesson_collapsed": false,
+      "verdict": "pass"
+    },
+    {
+      "signature": {
+        "norm": "rmsnorm",
+        "attention_type": "standard",
+        "n_kv_heads": 2,
+        "ffn": "moe",
+        "n_experts": 8,
+        "top_k": 2,
+        "activation": "silu",
+        "pos_embed": "absolute"
+      },
+      "qkn_off_hash": "ea8a15a59b5b",
+      "qkn_on_hash": "fc86def8b7da",
+      "qkn_off_sample": ", there was a little boy named Tim. Tim loved to play with his friends. One day, he saw a big box in",
+      "qkn_on_sample": ", there was a little girl named Lily. She loved to play with her toys and run around in the park. On",
+      "hamming_ratio_first_100": 0.75,
+      "lesson_collapsed": false,
+      "verdict": "pass"
+    },
+    {
+      "signature": {
+        "norm": "rmsnorm",
+        "attention_type": "standard",
+        "n_kv_heads": 2,
+        "ffn": "moe",
+        "n_experts": 8,
+        "top_k": 2,
+        "activation": "silu",
+        "pos_embed": "rope"
+      },
+      "qkn_off_hash": "061d2cfb5e9f",
+      "qkn_on_hash": "2309a65ba5bb",
+      "qkn_off_sample": ", there was a little boy named Tim. Tim loved to play with his toy cars. One day, he found a big box",
+      "qkn_on_sample": ", there was a little boy named Tim. Tim loved to play with his toy cars. One day, Tim saw a big cat.",
+      "hamming_ratio_first_100": 0.18,
+      "lesson_collapsed": false,
+      "verdict": "pass"
+    },
+    {
+      "signature": {
+        "norm": "rmsnorm",
+        "attention_type": "standard",
+        "n_kv_heads": 8,
+        "ffn": "dense",
+        "n_experts": 4,
+        "top_k": 1,
+        "activation": "gelu",
+        "pos_embed": "absolute"
+      },
+      "qkn_off_hash": "9cda54693bb5",
+      "qkn_on_hash": "d213cb4d8eb2",
+      "qkn_off_sample": ", there was a little boy named Tim. Tim loved to play with his friends. One day, he saw a big box in",
+      "qkn_on_sample": ", there was a little boy named Tim. Tim loved to play with his friends all day.\nOne day, Tim saw a b",
+      "hamming_ratio_first_100": 0.27,
+      "lesson_collapsed": false,
+      "verdict": "pass"
+    },
+    {
+      "signature": {
+        "norm": "rmsnorm",
+        "attention_type": "standard",
+        "n_kv_heads": 8,
+        "ffn": "dense",
+        "n_experts": 4,
+        "top_k": 1,
+        "activation": "gelu",
+        "pos_embed": "rope"
+      },
+      "qkn_off_hash": "a3974332c45c",
+      "qkn_on_hash": "9e26e7ba057e",
+      "qkn_off_sample": ", there was a little boy named Tim. Tim loved to play with his toys. One day, he saw a big box of wi",
+      "qkn_on_sample": ", there was a little boy named Tim. Tim loved to play with his ball and run on the ground.\nOne day, ",
+      "hamming_ratio_first_100": 0.36,
+      "lesson_collapsed": false,
+      "verdict": "pass"
+    },
+    {
+      "signature": {
+        "norm": "rmsnorm",
+        "attention_type": "standard",
+        "n_kv_heads": 8,
+        "ffn": "dense",
+        "n_experts": 4,
+        "top_k": 1,
+        "activation": "relu2",
+        "pos_embed": "absolute"
+      },
+      "qkn_off_hash": "6faa371cfea7",
+      "qkn_on_hash": "9eb4c540ff15",
+      "qkn_off_sample": ", there was a little boy named Tim. Tim was very happy. He wanted to play with his friends. He was s",
+      "qkn_on_sample": ", there was a little girl named Lily. She loved to play with her toys and played with her toys. One ",
+      "hamming_ratio_first_100": 0.74,
+      "lesson_collapsed": false,
+      "verdict": "pass"
+    },
+    {
+      "signature": {
+        "norm": "rmsnorm",
+        "attention_type": "standard",
+        "n_kv_heads": 8,
+        "ffn": "dense",
+        "n_experts": 4,
+        "top_k": 1,
+        "activation": "relu2",
+        "pos_embed": "rope"
+      },
+      "qkn_off_hash": "b33e1c0519f6",
+      "qkn_on_hash": "b401c419d014",
+      "qkn_off_sample": ", there was a little girl named Lily. She loved to play with her toys and play with her friends.\nOne",
+      "qkn_on_sample": ", there was a little boy named Tim. Tim loved to play with his friends all day long.\nOne day, Tim we",
+      "hamming_ratio_first_100": 0.74,
+      "lesson_collapsed": false,
+      "verdict": "pass"
+    },
+    {
+      "signature": {
+        "norm": "rmsnorm",
+        "attention_type": "standard",
+        "n_kv_heads": 8,
+        "ffn": "dense",
+        "n_experts": 4,
+        "top_k": 1,
+        "activation": "silu",
+        "pos_embed": "absolute"
+      },
+      "qkn_off_hash": "15d9309c3e9b",
+      "qkn_on_hash": "2fa4695b96b3",
+      "qkn_off_sample": ", there was a little boy named Tim. Tim loved to play with his friends with his friends. They were v",
+      "qkn_on_sample": ", there was a little boy named Tim. Tim loved to play with his friends. One day, he went to the park",
+      "hamming_ratio_first_100": 0.28,
+      "lesson_collapsed": false,
+      "verdict": "pass"
+    },
+    {
+      "signature": {
+        "norm": "rmsnorm",
+        "attention_type": "standard",
+        "n_kv_heads": 8,
+        "ffn": "dense",
+        "n_experts": 4,
+        "top_k": 1,
+        "activation": "silu",
+        "pos_embed": "rope"
+      },
+      "qkn_off_hash": "2f6c6c347139",
+      "qkn_on_hash": "3e638767b309",
+      "qkn_off_sample": ", there was a little boy named Tim. Tim loved to play with his friends and played together every day",
+      "qkn_on_sample": ", there was a little boy named Tim. Tim loved to play with his friends and his friends. One day, he ",
+      "hamming_ratio_first_100": 0.24,
+      "lesson_collapsed": false,
+      "verdict": "pass"
+    },
+    {
+      "signature": {
+        "norm": "rmsnorm",
+        "attention_type": "standard",
+        "n_kv_heads": 8,
+        "ffn": "moe",
+        "n_experts": 8,
+        "top_k": 2,
+        "activation": "gelu",
+        "pos_embed": "absolute"
+      },
+      "qkn_off_hash": "e271061029c0",
+      "qkn_on_hash": "94ecdb29fa83",
+      "qkn_off_sample": ", there was a little boy named Tim. Tim loved to play with his ball and new toy that his mom said \"a",
+      "qkn_on_sample": ", there was a little girl named Lily. She loved to play with her toys and run around in the park. On",
+      "hamming_ratio_first_100": 0.76,
+      "lesson_collapsed": false,
+      "verdict": "pass"
+    },
+    {
+      "signature": {
+        "norm": "rmsnorm",
+        "attention_type": "standard",
+        "n_kv_heads": 8,
+        "ffn": "moe",
+        "n_experts": 8,
+        "top_k": 2,
+        "activation": "gelu",
+        "pos_embed": "rope"
+      },
+      "qkn_off_hash": "840fed47d1e3",
+      "qkn_on_hash": "225c472057f2",
+      "qkn_off_sample": ", there was a little boy named Tim. Tim loved to play with his toys and books. One day, he wanted to",
+      "qkn_on_sample": ", there was a little girl named Lily. She loved to play with her toy animals. One day, she went to t",
+      "hamming_ratio_first_100": 0.72,
+      "lesson_collapsed": false,
+      "verdict": "pass"
+    },
+    {
+      "signature": {
+        "norm": "rmsnorm",
+        "attention_type": "standard",
+        "n_kv_heads": 8,
+        "ffn": "moe",
+        "n_experts": 8,
+        "top_k": 2,
+        "activation": "relu2",
+        "pos_embed": "absolute"
+      },
+      "qkn_off_hash": "f160bfce5578",
+      "qkn_on_hash": "cd2a311d8727",
+      "qkn_off_sample": ", there was a little girl named Lily. Lily loved to play with her friends. One day, she found a big ",
+      "qkn_on_sample": ", there was a little girl named Lily. Lily loved to play with her toys and eat yummy food. One day, ",
+      "hamming_ratio_first_100": 0.31,
+      "lesson_collapsed": false,
+      "verdict": "pass"
+    },
+    {
+      "signature": {
+        "norm": "rmsnorm",
+        "attention_type": "standard",
+        "n_kv_heads": 8,
+        "ffn": "moe",
+        "n_experts": 8,
+        "top_k": 2,
+        "activation": "relu2",
+        "pos_embed": "rope"
+      },
+      "qkn_off_hash": "9da14d2e4ec7",
+      "qkn_on_hash": "09d65d1d7acd",
+      "qkn_off_sample": ", there was a little girl named Lily. Lily loved to eat pastry. One day, she found a shiny thing on ",
+      "qkn_on_sample": ", there was a little boy named Tim. Tim loved to play outside. One day, he went to the park with his",
+      "hamming_ratio_first_100": 0.74,
+      "lesson_collapsed": false,
+      "verdict": "pass"
+    },
+    {
+      "signature": {
+        "norm": "rmsnorm",
+        "attention_type": "standard",
+        "n_kv_heads": 8,
+        "ffn": "moe",
+        "n_experts": 8,
+        "top_k": 2,
+        "activation": "silu",
+        "pos_embed": "absolute"
+      },
+      "qkn_off_hash": "c5abb4b36b8f",
+      "qkn_on_hash": "b2546d96483c",
+      "qkn_off_sample": ", there was a little girl named Lily. She loved to play with her toys and her books. One day, she fo",
+      "qkn_on_sample": ", there was a little girl named Lily. She loved to eat pretty pictures. One day, she wanted to play ",
+      "hamming_ratio_first_100": 0.46,
+      "lesson_collapsed": false,
+      "verdict": "pass"
+    },
+    {
+      "signature": {
+        "norm": "rmsnorm",
+        "attention_type": "standard",
+        "n_kv_heads": 8,
+        "ffn": "moe",
+        "n_experts": 8,
+        "top_k": 2,
+        "activation": "silu",
+        "pos_embed": "rope"
+      },
+      "qkn_off_hash": "75d6bd16c119",
+      "qkn_on_hash": "a21b6679edd0",
+      "qkn_off_sample": ", there was a little girl named Lily. She loved to play with her toys and eat pasta. One day, she wa",
+      "qkn_on_sample": ", there was a little girl named Lily. She loved to eat bread of carrots without asking. One day, she",
+      "hamming_ratio_first_100": 0.48,
+      "lesson_collapsed": false,
+      "verdict": "pass"
+    }
+  ]
+}

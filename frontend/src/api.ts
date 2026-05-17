@@ -14,11 +14,12 @@ export type StreamEvent =
   | { event: "instr"; [k: string]: any }
   | { event: "error"; message: string };
 
-export async function* streamGenerate(req: GenerateRequest): AsyncGenerator<StreamEvent> {
+export async function* streamGenerate(req: GenerateRequest, signal?: AbortSignal): AsyncGenerator<StreamEvent> {
   const res = await fetch("/api/generate", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(req),
+    signal,
   });
   if (!res.ok) {
     const err = await res.json().catch(() => ({ detail: res.statusText }));

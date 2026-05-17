@@ -1,4 +1,4 @@
-import { useState } from "preact/hooks";
+import { useRef, useState } from "preact/hooks";
 import { config, generating, cacheState, resolution, kindBActive, instrumentation } from "../state";
 import { streamGenerate } from "../api";
 import { HINTS } from "../lib/labels";
@@ -12,10 +12,18 @@ export function RunPanel() {
   const [output, setOutput] = useState("");
   const [status, setStatus] = useState<string | null>(null);
   const [statusIsErr, setStatusIsErr] = useState(false);
+  const [hoverRun, setHoverRun] = useState(false);
+  const aborterRef = useRef<AbortController | null>(null);
 
   const res = resolution.value;
   const kbActive = kindBActive.value;
   const runnable = res.state !== "red";
+
+  function stop() {
+    if (aborterRef.current) {
+      aborterRef.current.abort();
+    }
+  }
 
   async function run() {
     setOutput(prompt);
@@ -29,6 +37,8 @@ export function RunPanel() {
     let tokens = 0;
     let acc = prompt;
     let tStart = t0;
+    const aborter = new AbortController();
+    aborterRef.current = aborter;
     try {
       for await (const ev of streamGenerate({
         config: config.value,
@@ -36,7 +46,7 @@ export function RunPanel() {
         max_tokens: maxTokens,
         temperature,
         instrument: true,
-      })) {
+      }, aborter.signal)) {
         if (ev.event === "start") {
           cacheState.value = {
             positions: ev.prompt_tokens,
@@ -71,18 +81,35 @@ export function RunPanel() {
         }
       }
     } catch (e) {
-      setStatus("error: " + (e as Error).message);
-      setStatusIsErr(true);
+      const err = e as Error;
+      if (err.name === "AbortError" || aborter.signal.aborted) {
+        const dt = (performance.now() - tStart) / 1000;
+        const tps = dt > 0 ? tokens / dt : 0;
+        setStatus(`stopped · ${tokens} tok · ${tps.toFixed(1)} tok/s · ${dt.toFixed(2)}s`);
+        cacheState.value = { ...cacheState.value, status: "done" };
+      } else {
+        setStatus("error: " + err.message);
+        setStatusIsErr(true);
+      }
     } finally {
       generating.value = false;
+      aborterRef.current = null;
+      setHoverRun(false);
     }
   }
 
   return (
     <div class="panel">
       <div class="panel-head">
-        <button class="run-trigger" onClick={run} disabled={!runnable || generating.value} title={runnable ? "Run inference with the current configuration." : "No trained checkpoint within 2 axes. Cost is still exact, but no real sample can be produced."}>
-          {generating.value ? "running…" : "Run"}
+        <button
+          class={`run-trigger ${generating.value ? "is-running" : ""} ${generating.value && hoverRun ? "is-stoppable" : ""}`}
+          onClick={generating.value ? stop : run}
+          onMouseEnter={() => setHoverRun(true)}
+          onMouseLeave={() => setHoverRun(false)}
+          disabled={generating.value ? false : !runnable}
+          title={generating.value ? "Stop streaming and keep the tokens already produced." : (runnable ? "Run inference with the current configuration." : "No trained checkpoint within 2 axes. Cost is still exact, but no real sample can be produced.")}
+        >
+          {generating.value ? (hoverRun ? "stop" : "running") : "Run"}
         </button>
         <div class="run-state">
           {res.state === "green" && (

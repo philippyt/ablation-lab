@@ -83,6 +83,25 @@ header h1 {
   flex-shrink: 0;
 }
 
+.gh-link {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  height: 30px;
+  color: var(--fg);
+  border: 1px solid var(--border-strong);
+  background: var(--panel);
+  margin-left: 0.2rem;
+  text-decoration: none;
+  transition: background-color 80ms ease, color 80ms ease;
+}
+.gh-link:hover {
+  background: var(--panel-alt);
+  border-color: var(--fg);
+}
+.gh-link svg { display: block; }
+
 .wit-button {
   font-family: var(--display);
   font-size: 0.85rem;
@@ -92,7 +111,7 @@ header h1 {
   border: 1px solid var(--border-strong);
   padding: 0.3rem 0.85rem;
   cursor: pointer;
-  margin-left: 0.4rem;
+  margin-left: 0.10rem;
   text-transform: none;
   letter-spacing: 0;
   transition: background-color 80ms ease, color 80ms ease;
@@ -859,6 +878,16 @@ svg.diagram {
   border-color: var(--border);
   color: var(--muted);
   cursor: not-allowed;
+}
+.run-trigger.is-stoppable {
+  background: #fde7e7;
+  border-color: #c44;
+  color: #7a1f1f;
+}
+.run-trigger.is-stoppable:hover:not(:disabled) {
+  background: #c44;
+  border-color: #c44;
+  color: white;
 }
 .roofline {
   margin-top: 0.6rem;

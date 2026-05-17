@@ -20,7 +20,7 @@ export function WhatIsThisModal() {
         <button class="close wit-close" onClick={() => (whatIsThisOpen.value = false)} aria-label="close">×</button>
         <h2>What is this?</h2>
         <p class="wit-lead">
-          A pedagogical playground for composing tiny transformer architectures and seeing how inference output breaks.
+          A playground for composing tiny transformer architectures and watching how the output breaks when you change them. Built for students, engineers new to transformers, and anyone who learns by poking at things.
         </p>
 
         <h3>What it does</h3>
