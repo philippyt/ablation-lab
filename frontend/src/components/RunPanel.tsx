@@ -7,7 +7,7 @@ import { attnLabels } from "./AttentionGrid";
 
 export function RunPanel() {
   const [prompt, setPrompt] = useState("Once upon a time");
-  const [maxTokens, setMaxTokens] = useState(300);
+  const [maxTokens, setMaxTokens] = useState(600);
   const [temperature, setTemperature] = useState(0);
   const [output, setOutput] = useState("");
   const [status, setStatus] = useState<string | null>(null);

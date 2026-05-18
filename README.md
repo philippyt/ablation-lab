@@ -86,10 +86,10 @@ The active-per-token count differs from total only when `ffn == "moe"`: routed e
 
 KV cache size dominates serving cost at long context on real models. The cost panel makes the relationship between architecture and KV cache visible, even at toy scale.
 
-For standard attention (MHA, GQA, MQA), bytes per token per layer:
+For standard attention (MHA, GQA, MQA), bytes per token across all layers:
 
 ```
-2 * n_kv_heads * head_dim * dtype_bytes
+2 * n_layers * n_kv_heads * head_dim * dtype_bytes
 ```
 
 The factor of 2 is for K and V. Full-context cache is that times `ctx`. The `2 * n_kv_heads` is why GQA and MQA exist: GQA shares K and V across query head groups, MQA collapses to a single K and V across all query heads. The KV cache shrinks linearly in `n_kv_heads` while modeling capacity (governed by `n_heads`) stays the same.
@@ -106,11 +106,11 @@ Approximate full memory at the lab scale:
 
 | Architecture | Total params | KV per token | KV @ ctx=256 | Total memory (weights + KV + activations) |
 |---|---|---|---|---|
-| Baseline (MHA, dense, LayerNorm, SiLU, RoPE) | 863K | 512 B | 128 KB | ~3 MB |
-| Swap MHA for GQA (n_kv=2) | 826K | 128 B | 32 KB | ~2 MB |
-| Swap MHA for MQA (n_kv=1) | 818K | 64 B | 16 KB | ~2 MB |
-| Swap standard for MLA | 757K | 96 B | 24 KB | ~2 MB |
-| Swap dense for MoE 8 experts top-2 | 4.99M | 512 B | 128 KB | ~10 MB |
+| Baseline (MHA, dense, LayerNorm, SiLU, RoPE) | 863K | 2,048 B | 512 KB | ~3 MB |
+| Swap MHA for GQA (n_kv=2) | 765K | 512 B | 128 KB | ~2 MB |
+| Swap MHA for MQA (n_kv=1) | 749K | 256 B | 64 KB | ~2 MB |
+| Swap standard for MLA | 757K | 192 B | 48 KB | ~2 MB |
+| Swap dense for MoE 8 experts top-2 | 5.00M | 2,048 B | 512 KB | ~11 MB |
 
 The relative changes match real-scale results. MHA to MQA cuts KV by 8x. GQA at `n_kv=2` cuts it by 4x. MLA cuts it further still. MoE leaves KV unchanged because MoE only restructures the FFN.
 
@@ -132,13 +132,13 @@ Typical bandwidth and FP16 TFLOPs per VRAM tier:
 | 141 GB | 989 TFLOPs | 4.8 TB/s | 206 |
 | 192 GB | 1800 TFLOPs | 6.8 TB/s | 265 |
 
-The model is memory-bound on every tier here. The 32 GB consumer tier has a lower ridge point than the 48 GB datacenter-inference tier because the consumer card pairs GDDR7 (high bandwidth) with modest compute, while the datacenter card pairs GDDR6 (lower bandwidth) with high compute. Both are memory-bound, the ratio just differs.
+The model is memory-bound on every tier here. Arithmetic intensity is far below every tier's ridge point, so the conclusion holds regardless of the exact hardware. The per-tier TFLOPs and bandwidth figures are representative values. The specific compute-to-bandwidth balance varies by card, which is why the ridge column is non-monotonic in VRAM size.
 
 The absolute tok/s at lab scale is unreasonably high because the model is unreasonably small. The interesting number is how it shifts when you swap MHA for MQA (less KV per token) or push context length up (more KV at full ctx).
 
 ## Sliding-window generation
 
-The trained context is 256 tokens. The user can request up to 500 max_tokens. Without intervention, a rope-trained model would either crash (out-of-range rope cache) or quietly truncate at the trained ctx.
+The trained context is 256 tokens. The user can request up to 5000 max_tokens. Without intervention, a rope-trained model would either crash (out-of-range rope cache) or quietly truncate at the trained ctx.
 
 The lab handles this with a sliding KV cache. When the cache fills past `ctx`, the oldest entries drop. RoPE positions are computed on the fly from the absolute token position, not from a fixed pre-allocated buffer, so generation can continue past the trained ctx. The model only sees the most recent `ctx` tokens worth of cached K and V at any time.
 

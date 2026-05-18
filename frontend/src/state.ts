@@ -23,8 +23,8 @@ export const defaultConfig: ArchConfig = {
   n_heads: 8,
   n_kv_heads: 8,
   head_dim: 16,
-  ctx: 128,
-  norm: "layernorm",
+  ctx: 256,
+  norm: "rmsnorm",
   ffn: "dense",
   ffn_mult: 4,
   n_experts: 4,
@@ -32,7 +32,7 @@ export const defaultConfig: ArchConfig = {
   tie_embeddings: true,
   pos_embed: "rope",
   activation: "silu",
-  qk_norm: false,
+  qk_norm: true,
   attention_type: "standard",
   enable_attention: true,
   enable_ffn: true,
@@ -177,11 +177,5 @@ export async function updateConfig(patch: Partial<ArchConfig>, fromPreset?: Pres
 
 export async function setEntries(list: ManifestEntry[]): Promise<void> {
   entries.value = list;
-  if (list.length > 0) {
-    const baseline = list[0];
-    config.value = { ...baseline.arch_config };
-    name.value = DEFAULT_NAME;
-    previousCost.value = null;
-  }
   currentHash.value = await archHash(config.value);
 }

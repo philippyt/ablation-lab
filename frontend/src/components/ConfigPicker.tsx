@@ -4,10 +4,10 @@ import { ffnLabel, HINTS } from "../lib/labels";
 import { HelpHint } from "./HelpHint";
 
 const ATTENTION_OPTIONS: Array<{ value: string; label: string; n_kv_heads: number; attention_type: "standard" | "mla" }> = [
-  { value: "mha", label: "MHA · Multi-Head", n_kv_heads: 8, attention_type: "standard" },
-  { value: "gqa", label: "GQA · Grouped-Query", n_kv_heads: 2, attention_type: "standard" },
-  { value: "mqa", label: "MQA · Multi-Query", n_kv_heads: 1, attention_type: "standard" },
-  { value: "mla", label: "MLA · Multi-head Latent", n_kv_heads: 1, attention_type: "mla" },
+  { value: "mha", label: "MHA - Multi-Head", n_kv_heads: 8, attention_type: "standard" },
+  { value: "gqa", label: "GQA - Grouped-Query", n_kv_heads: 2, attention_type: "standard" },
+  { value: "mqa", label: "MQA - Multi-Query", n_kv_heads: 1, attention_type: "standard" },
+  { value: "mla", label: "MLA - Multi-head Latent", n_kv_heads: 1, attention_type: "mla" },
 ];
 
 const POS_OPTIONS = [

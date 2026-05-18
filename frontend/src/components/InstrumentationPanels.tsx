@@ -237,7 +237,7 @@ function SurprisePanel() {
   const mean = ss.reduce((a, b) => a + b, 0) / ss.length;
   return (
     <div class="instr-surprise">
-      <p class="instr-meta">−log p(token) under the model. high = unexpected. mean: {mean.toFixed(2)} nats · max: {maxS.toFixed(2)}</p>
+      <p class="instr-meta">−log p(token) under the model. high = unexpected. mean: {mean.toFixed(2)} nats. max: {maxS.toFixed(2)}</p>
       <div class="instr-surprise-stream">
         {strs.map((c, i) => (
           <span class="instr-surprise-char" style={{ background: surpriseColor(ss[i], maxS) }} title={`-log p = ${ss[i].toFixed(2)}`}>
