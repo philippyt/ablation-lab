@@ -10,7 +10,7 @@ import torch
 from .config import ArchConfig, arch_hash, _pos_embed_kind_a
 
 REPO_ROOT = Path(__file__).resolve().parent.parent
-CHECKPOINTS_DIR = REPO_ROOT / "checkpoints"
+CHECKPOINTS_DIR = Path(os.environ.get("ABLATION_CHECKPOINTS_DIR", str(REPO_ROOT / "checkpoints")))
 MANIFEST_PATH = CHECKPOINTS_DIR / "manifest.json"
 LOCK_PATH = CHECKPOINTS_DIR / ".lock"
 

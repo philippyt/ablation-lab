@@ -10,6 +10,8 @@ dependencies = [
     "pydantic>=2.6",
     "jinja2>=3.1",
     "sse-starlette>=2.0",
+    "huggingface-hub>=1.15.0",
+    "hf-transfer>=0.1.9",
 ]
 
 [project.optional-dependencies]

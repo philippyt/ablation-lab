@@ -1,3 +1,15 @@
+---
+title: Ablation Lab
+emoji: 🧪
+colorFrom: gray
+colorTo: indigo
+sdk: docker
+app_port: 7860
+pinned: false
+license: mit
+short_description: Compose a tiny transformer, ablate a part, watch it break.
+---
+
 # Ablation Lab
 Playground for breaking transformers on purpose.
 
