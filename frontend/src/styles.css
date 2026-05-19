@@ -46,16 +46,58 @@ html, body {
 .app {
   height: 100vh;
   display: grid;
-  grid-template-columns: 1fr clamp(330px, 26vw, 400px);
+  grid-template-columns: 1fr clamp(300px, 22vw, 400px);
   grid-template-rows: auto minmax(0, 1fr);
   overflow: hidden;
+  --bottom-h: 30em;
 }
 
-@media (max-width: 900px) {
+@media (max-width: 1599px) {
+  .app { grid-template-columns: 1fr clamp(290px, 22vw, 380px); --bottom-h: 28em; }
+}
+
+@media (max-width: 1279px) {
+  .app { grid-template-columns: 1fr clamp(270px, 24vw, 340px); --bottom-h: 24em; }
+}
+
+@media (min-width: 1024px) and (orientation: portrait) {
+  .workspace { grid-template-rows: auto minmax(0, 1fr); }
+  .canvas-panel { flex: 0 0 auto; }
+  .canvas-panel .diagram-wrap { aspect-ratio: 5 / 1; max-height: 22em; }
+  .bottom-row {
+    height: auto;
+    --bottom-h: auto;
+    grid-template-columns: 1fr;
+    grid-auto-rows: 1fr;
+  }
+  .bottom-row > .panel,
+  .bottom-row > .diagnostics-col { height: 100%; min-height: 0; }
+}
+
+@media (max-width: 1023px) {
   html, body { overflow: auto; }
-  .app { height: auto; grid-template-columns: 1fr; grid-template-rows: auto auto auto; }
+  .app { height: auto; grid-template-columns: 1fr; grid-template-rows: auto auto auto; --bottom-h: auto; }
   .sidebar { grid-column: 1 !important; grid-row: 2 !important; border-left: 0 !important; border-bottom: 1px solid var(--border-strong); height: auto !important; overflow: visible !important; }
+  .sidebar .panel.collapsible.is-open,
+  .diagnostics-col .panel.collapsible.is-open { flex: 0 0 auto; min-height: 0; }
+  .sidebar .panel.collapsible > .panel-body,
+  .diagnostics-col .panel.collapsible > .panel-body { overflow: visible; }
+  .diagnostics-col { overflow: visible; height: auto; }
   .workspace { grid-row: 3 !important; height: auto !important; overflow: visible !important; }
+  .canvas-panel .diagram-wrap {
+    overflow-x: auto;
+    overflow-y: hidden;
+    justify-content: flex-start;
+    min-height: 0;
+  }
+  .canvas-panel svg.diagram {
+    width: 720px;
+    min-width: 720px;
+    height: 9rem;
+    max-width: none;
+    max-height: none;
+    flex-shrink: 0;
+  }
 }
 
 header {
@@ -68,9 +110,20 @@ header {
   border-bottom: 1px solid var(--border-strong);
   background: var(--panel);
   min-width: 0;
+  flex-wrap: wrap;
+  row-gap: 0.5rem;
 }
 
-.header-right { display: flex; align-items: center; gap: 0.7rem; margin-left: auto; flex-shrink: 0; }
+.header-right { display: flex; align-items: center; gap: 0.7rem; margin-left: auto; flex-shrink: 0; min-width: 0; }
+.header-right .hash { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+@media (max-width: 639px) {
+  header { padding: 0.7rem var(--pad); gap: 0.55rem; }
+  .header-right { width: 100%; margin-left: 0; justify-content: flex-end; }
+  .wit-button { padding: 0.28rem 0.65rem; font-size: 0.78rem; }
+  .row { grid-template-columns: 1fr; gap: 0.3rem 0.6rem; }
+  .row label { margin-bottom: -0.15rem; }
+}
 
 header h1 {
   margin: 0;
@@ -283,20 +336,28 @@ header h1 {
   grid-template-columns: 1.5fr 1fr 1.1fr;
   gap: 1rem;
   min-height: 0;
-  height: 30em;
+  height: var(--bottom-h, 30em);
 }
 .bottom-row > .panel {
   height: 100%;
   min-height: 0;
   overflow: hidden;
 }
-@media (max-width: 1400px) {
-  .bottom-row { grid-template-columns: 1fr 1fr; }
-  .bottom-row .diagnostics-col { grid-column: 1 / -1; height: auto; }
+.bottom-row > .diagnostics-col {
+  height: 100%;
+  min-height: 0;
+  overflow: hidden;
 }
-@media (max-width: 1200px) {
+@media (max-width: 1599px) {
+  .bottom-row { grid-template-columns: 1.3fr 1fr 1fr; }
+}
+@media (max-width: 1279px) {
+  .bottom-row { grid-template-columns: 1.2fr 1fr 1fr; }
+}
+@media (max-width: 1023px) {
   .bottom-row { grid-template-columns: 1fr; height: auto; }
-  .bottom-row > .panel { height: auto; }
+  .bottom-row > .panel,
+  .bottom-row > .diagnostics-col { height: auto; }
 }
 
 .diagnostics-col {
@@ -602,6 +663,12 @@ header h1 {
   grid-template-columns: 9rem 1fr;
   gap: 0.7rem 0.85rem;
   align-items: center;
+}
+@media (max-width: 1599px) {
+  .row { grid-template-columns: 8rem 1fr; }
+}
+@media (max-width: 1279px) {
+  .row { grid-template-columns: 7rem 1fr; gap: 0.55rem 0.6rem; }
 }
 
 .row label {
