@@ -41,6 +41,19 @@ class ManifestEntryOut(BaseModel):
     arch_config: dict
     trained_at: int
 
+class SurgeryIn(BaseModel):
+    disabled_heads: dict[int, list[int]] = Field(default_factory=dict)
+    disabled_attn_layers: list[int] = Field(default_factory=list)
+    disabled_ffn_layers: list[int] = Field(default_factory=list)
+    disabled_norm_layers: list[int] = Field(default_factory=list)
+
+class KVDegradationIn(BaseModel):
+    quant: Literal["none", "int8", "int4", "int2"] = "none"
+    window: Optional[int] = Field(default=None, ge=4, le=512)
+    sink_mode: Literal["normal", "keep_sinks", "drop_sinks"] = "normal"
+    sink_tokens: int = Field(default=4, ge=0, le=16)
+    drop_prob: float = Field(default=0.0, ge=0.0, le=0.9)
+
 class GenerateIn(BaseModel):
     config: ArchConfigIn
     prompt: str
@@ -48,6 +61,20 @@ class GenerateIn(BaseModel):
     temperature: float = Field(default=0.8, ge=0.0, le=2.0)
     top_k: Optional[int] = Field(default=None, ge=1, le=1024)
     instrument: bool = False
+    surgery: Optional[SurgeryIn] = None
+    kv: Optional[KVDegradationIn] = None
+
+class RaceIn(BaseModel):
+    config_a: ArchConfigIn
+    config_b: ArchConfigIn
+    surgery_a: Optional[SurgeryIn] = None
+    surgery_b: Optional[SurgeryIn] = None
+    kv_a: Optional[KVDegradationIn] = None
+    kv_b: Optional[KVDegradationIn] = None
+    prompt: str
+    max_tokens: int = Field(default=400, ge=1, le=2000)
+    temperature: float = Field(default=0.0, ge=0.0, le=2.0)
+    top_k: Optional[int] = Field(default=None, ge=1, le=1024)
 
 class CostRequest(BaseModel):
     config: ArchConfigIn

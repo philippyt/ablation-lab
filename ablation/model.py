@@ -85,6 +85,119 @@ class _PerHeadRMSNorm(nn.Module):
         rms = x.pow(2).mean(dim=-1, keepdim=True).add(self.eps).rsqrt()
         return x * rms * self.weight
 
+def _quantize_kv(t: torch.Tensor, bits: int) -> torch.Tensor:
+    levels = (1 << bits) - 1
+    t_f = t.float()
+    t_min = t_f.amin(dim=-1, keepdim=True)
+    t_max = t_f.amax(dim=-1, keepdim=True)
+    scale = (t_max - t_min).clamp_min(1e-8) / levels
+    q = torch.round((t_f - t_min) / scale).clamp(0, levels)
+    return (q * scale + t_min).to(t.dtype)
+
+def _kv_quant_bits(kv_rt: dict | None) -> int | None:
+    if not kv_rt:
+        return None
+    q = kv_rt.get("quant", "none")
+    if q == "int8":
+        return 8
+    if q == "int4":
+        return 4
+    if q == "int2":
+        return 2
+    return None
+
+def _trim_kv_tensor(t: torch.Tensor, seq_dim: int, cap: int, keep_sinks: int) -> torch.Tensor:
+    cur = t.size(seq_dim)
+    if cur <= cap:
+        return t
+    if keep_sinks > 0 and keep_sinks < cap:
+        tail = cap - keep_sinks
+        sinks = t.narrow(seq_dim, 0, keep_sinks)
+        recent = t.narrow(seq_dim, cur - tail, tail)
+        return torch.cat([sinks, recent], dim=seq_dim).contiguous()
+    return t.narrow(seq_dim, cur - cap, cap).contiguous()
+
+def _build_kv_degradation_mask(
+    T: int,
+    Tk: int,
+    cache_offset: int,
+    kv_rt: dict | None,
+    layer_idx: int,
+    pos: int,
+    device,
+    dtype,
+) -> torch.Tensor | None:
+    if not kv_rt:
+        return None
+    sink_mode = kv_rt.get("sink_mode", "normal")
+    sink_tokens = int(kv_rt.get("sink_tokens", 4))
+    drop_prob = float(kv_rt.get("drop_prob", 0.0))
+    need_drop_sinks = (sink_mode == "drop_sinks" and sink_tokens > 0 and Tk > sink_tokens)
+    need_random_drop = (drop_prob > 0.0 and Tk > 1)
+    if not need_drop_sinks and not need_random_drop:
+        return None
+    extra = torch.zeros(T, Tk, device=device, dtype=dtype)
+    q_pos = torch.arange(T, device=device).unsqueeze(1) + cache_offset
+    k_pos = torch.arange(Tk, device=device).unsqueeze(0)
+    if need_drop_sinks:
+        # Mask out the first sink_tokens keys for any query strictly past them
+        sink_mask = (k_pos < sink_tokens) & (q_pos >= sink_tokens)
+        extra.masked_fill_(sink_mask, float("-inf"))
+    if need_random_drop:
+        gen = torch.Generator(device="cpu")
+        gen.manual_seed(1337 + layer_idx * 9973 + pos * 31)
+        rand = torch.rand((T, Tk), generator=gen).to(device=device)
+        # Never mask self-token (j == i) so softmax always has at least one valid key
+        drop_mask = (rand < drop_prob) & (k_pos < q_pos)
+        extra.masked_fill_(drop_mask, float("-inf"))
+    return extra
+
+def _disabled_heads_for(rt: dict, layer_idx: int) -> list[int]:
+    surgery = rt.get("surgery")
+    if not surgery:
+        return []
+    dh = surgery.get("disabled_heads")
+    if not dh:
+        return []
+    heads = dh.get(layer_idx)
+    if heads is None:
+        heads = dh.get(str(layer_idx))
+    return list(heads) if heads else []
+
+def _sdpa_with_metrics(
+    q: torch.Tensor,
+    k: torch.Tensor,
+    v: torch.Tensor,
+    attn_mask: torch.Tensor | None,
+    is_causal: bool,
+    step_metrics: dict | None,
+    layer_idx: int,
+) -> torch.Tensor:
+    if step_metrics is None:
+        return F.scaled_dot_product_attention(q, k, v, attn_mask=attn_mask, is_causal=is_causal)
+    dh = q.size(-1)
+    scores = torch.matmul(q, k.transpose(-2, -1)) / math.sqrt(dh)
+    if is_causal and scores.size(-2) > 1:
+        T, Tk = scores.size(-2), scores.size(-1)
+        cmask = _causal_mask(T, Tk, Tk - T, q.device, scores.dtype)
+        scores = scores + cmask
+    if attn_mask is not None:
+        scores = scores + attn_mask
+    # Record max pre-softmax logit and attention entropy for the last query token
+    with torch.no_grad():
+        last_scores = scores[:, :, -1, :].float()
+        finite = torch.isfinite(last_scores)
+        if finite.any():
+            lmax = last_scores.masked_fill(~finite, float("-inf")).max().item()
+        else:
+            lmax = 0.0
+        probs = F.softmax(last_scores, dim=-1)
+        ent = -(probs * probs.clamp_min(1e-12).log()).sum(dim=-1).mean().item()
+        step_metrics.setdefault("attn_logit_max", {})[layer_idx] = lmax
+        step_metrics.setdefault("attn_entropy", {})[layer_idx] = ent
+    attn_w = F.softmax(scores, dim=-1)
+    return torch.matmul(attn_w, v)
+
 class Attention(nn.Module):
     def __init__(self, cfg: ArchConfig):
         super().__init__()
@@ -110,9 +223,11 @@ class Attention(nn.Module):
             self.q_norm = None
             self.k_norm = None
 
-    def forward(self, x: torch.Tensor, kv_cache: dict | None = None, runtime: dict | None = None) -> torch.Tensor:
+    def forward(self, x: torch.Tensor, kv_cache: dict | None = None, runtime: dict | None = None, layer_idx: int = 0) -> torch.Tensor:
         rt = runtime or {}
         eff_pos = rt.get("pos_embed", self.trained_pos)
+        kv_rt = rt.get("kv")
+        step_metrics = rt.get("step_metrics")
         B, T, _ = x.shape
         q = self.q_proj(x).view(B, T, self.n_heads, self.head_dim).transpose(1, 2)
         k = self.k_proj(x).view(B, T, self.n_kv_heads, self.head_dim).transpose(1, 2)
@@ -125,13 +240,19 @@ class Attention(nn.Module):
             cos, sin = _rope_at(self.head_dim, pos, T, device=q.device, dtype=q.dtype)
             q = _apply_rope(q, cos, sin)
             k = _apply_rope(k, cos, sin)
+        q_bits = _kv_quant_bits(kv_rt)
+        if q_bits is not None:
+            k = _quantize_kv(k, q_bits)
+            v = _quantize_kv(v, q_bits)
         if kv_cache is not None:
             if "k" in kv_cache:
                 k = torch.cat([kv_cache["k"], k], dim=2)
                 v = torch.cat([kv_cache["v"], v], dim=2)
-            if k.size(2) > self.cfg.ctx:
-                k = k[:, :, -self.cfg.ctx:, :].contiguous()
-                v = v[:, :, -self.cfg.ctx:, :].contiguous()
+            win = kv_rt.get("window") if kv_rt else None
+            cap = min(self.cfg.ctx, int(win)) if (win is not None and int(win) > 0) else self.cfg.ctx
+            keep_sinks = int(kv_rt.get("sink_tokens", 4)) if (kv_rt and kv_rt.get("sink_mode") == "keep_sinks") else 0
+            k = _trim_kv_tensor(k, 2, cap, keep_sinks)
+            v = _trim_kv_tensor(v, 2, cap, keep_sinks)
             kv_cache["k"] = k
             kv_cache["v"] = v
             kv_cache["len"] = k.size(2)
@@ -152,7 +273,23 @@ class Attention(nn.Module):
                 attn_mask = _causal_mask(T, Tk, cache_offset, q.device, q.dtype)
                 is_causal = False
             attn_mask = attn_mask + alibi
-        attn_out = F.scaled_dot_product_attention(q, k, v, attn_mask=attn_mask, is_causal=is_causal)
+        kv_extra = _build_kv_degradation_mask(T, Tk, cache_offset, kv_rt, layer_idx, pos, q.device, q.dtype)
+        if kv_extra is not None:
+            if attn_mask is None:
+                attn_mask = _causal_mask(T, Tk, cache_offset, q.device, q.dtype)
+                is_causal = False
+            attn_mask = attn_mask + kv_extra
+        attn_out = _sdpa_with_metrics(q, k, v, attn_mask=attn_mask, is_causal=is_causal, step_metrics=step_metrics, layer_idx=layer_idx)
+        disabled = _disabled_heads_for(rt, layer_idx)
+        if disabled:
+            attn_out = attn_out.clone()
+            for h_idx in disabled:
+                if 0 <= h_idx < self.n_heads:
+                    attn_out[:, h_idx, :, :] = 0.0
+        if step_metrics is not None:
+            with torch.no_grad():
+                h_norms = attn_out[0, :, -1, :].float().norm(dim=-1).tolist()
+                step_metrics.setdefault("head_norms", {})[layer_idx] = h_norms
         attn_out = attn_out.transpose(1, 2).contiguous().view(B, T, self.n_heads * self.head_dim)
         return self.o_proj(attn_out)
 
@@ -181,9 +318,11 @@ class MLAAttention(nn.Module):
             self.q_norm = None
             self.k_norm = None
 
-    def forward(self, x: torch.Tensor, kv_cache: dict | None = None, runtime: dict | None = None) -> torch.Tensor:
+    def forward(self, x: torch.Tensor, kv_cache: dict | None = None, runtime: dict | None = None, layer_idx: int = 0) -> torch.Tensor:
         rt = runtime or {}
         eff_pos = rt.get("pos_embed", "rope")
+        kv_rt = rt.get("kv")
+        step_metrics = rt.get("step_metrics")
         B, T, _ = x.shape
         q = self.q_proj(x).view(B, T, self.n_heads, self.head_dim).transpose(1, 2)
         q_nope, q_rope = q.split([self.nope_dim, self.rope_dim], dim=-1)
@@ -198,13 +337,19 @@ class MLAAttention(nn.Module):
         else:
             q_rope_rot = q_rope
             k_rope_rot = k_rope
+        q_bits = _kv_quant_bits(kv_rt)
+        if q_bits is not None:
+            latent = _quantize_kv(latent, q_bits)
+            k_rope_rot = _quantize_kv(k_rope_rot, q_bits)
         if kv_cache is not None:
             if "latent" in kv_cache:
                 latent = torch.cat([kv_cache["latent"], latent], dim=1)
                 k_rope_rot = torch.cat([kv_cache["k_rope"], k_rope_rot], dim=1)
-            if latent.size(1) > self.cfg.ctx:
-                latent = latent[:, -self.cfg.ctx:, :].contiguous()
-                k_rope_rot = k_rope_rot[:, -self.cfg.ctx:, :, :].contiguous()
+            win = kv_rt.get("window") if kv_rt else None
+            cap = min(self.cfg.ctx, int(win)) if (win is not None and int(win) > 0) else self.cfg.ctx
+            keep_sinks = int(kv_rt.get("sink_tokens", 4)) if (kv_rt and kv_rt.get("sink_mode") == "keep_sinks") else 0
+            latent = _trim_kv_tensor(latent, 1, cap, keep_sinks)
+            k_rope_rot = _trim_kv_tensor(k_rope_rot, 1, cap, keep_sinks)
             kv_cache["latent"] = latent
             kv_cache["k_rope"] = k_rope_rot
             kv_cache["len"] = latent.size(1)
@@ -219,11 +364,25 @@ class MLAAttention(nn.Module):
         if self.q_norm is not None:
             q_full = self.q_norm(q_full.transpose(1, 2)).transpose(1, 2)
             k = self.k_norm(k.transpose(1, 2)).transpose(1, 2)
-        attn_out = F.scaled_dot_product_attention(
-            q_full, k, v,
-            attn_mask=_causal_mask(T, Tk, cache_offset, q_full.device, q_full.dtype) if kv_cache is not None and cache_offset > 0 else None,
-            is_causal=(kv_cache is None or cache_offset == 0),
-        )
+        attn_mask = _causal_mask(T, Tk, cache_offset, q_full.device, q_full.dtype) if kv_cache is not None and cache_offset > 0 else None
+        is_causal = (kv_cache is None or cache_offset == 0)
+        kv_extra = _build_kv_degradation_mask(T, Tk, cache_offset, kv_rt, layer_idx, pos, q_full.device, q_full.dtype)
+        if kv_extra is not None:
+            if attn_mask is None:
+                attn_mask = _causal_mask(T, Tk, cache_offset, q_full.device, q_full.dtype)
+                is_causal = False
+            attn_mask = attn_mask + kv_extra
+        attn_out = _sdpa_with_metrics(q_full, k, v, attn_mask=attn_mask, is_causal=is_causal, step_metrics=step_metrics, layer_idx=layer_idx)
+        disabled = _disabled_heads_for(rt, layer_idx)
+        if disabled:
+            attn_out = attn_out.clone()
+            for h_idx in disabled:
+                if 0 <= h_idx < self.n_heads:
+                    attn_out[:, h_idx, :, :] = 0.0
+        if step_metrics is not None:
+            with torch.no_grad():
+                h_norms = attn_out[0, :, -1, :].float().norm(dim=-1).tolist()
+                step_metrics.setdefault("head_norms", {})[layer_idx] = h_norms
         attn_out = attn_out.transpose(1, 2).contiguous().view(B, T, self.n_heads * self.head_dim)
         return self.o_proj(attn_out)
 
@@ -291,17 +450,22 @@ class Block(nn.Module):
         self.norm2 = make_norm(cfg)
         self.ffn = make_ffn(cfg)
 
-    def forward(self, x: torch.Tensor, kv_cache: dict | None = None, runtime: dict | None = None) -> torch.Tensor:
+    def forward(self, x: torch.Tensor, kv_cache: dict | None = None, runtime: dict | None = None, layer_idx: int = 0) -> torch.Tensor:
         rt = runtime or {}
-        enable_norms = rt.get("enable_norms", True)
-        enable_attention = rt.get("enable_attention", True)
-        enable_ffn = rt.get("enable_ffn", True)
+        surgery = rt.get("surgery") or {}
+        enable_norms = rt.get("enable_norms", True) and (layer_idx not in surgery.get("disabled_norm_layers", ()))
+        enable_attention = rt.get("enable_attention", True) and (layer_idx not in surgery.get("disabled_attn_layers", ()))
+        enable_ffn = rt.get("enable_ffn", True) and (layer_idx not in surgery.get("disabled_ffn_layers", ()))
         if enable_attention:
             x_in = self.norm1(x) if enable_norms else x
-            x = x + self.attn(x_in, kv_cache=kv_cache, runtime=rt)
+            x = x + self.attn(x_in, kv_cache=kv_cache, runtime=rt, layer_idx=layer_idx)
         if enable_ffn:
             x_in = self.norm2(x) if enable_norms else x
             x = x + self.ffn(x_in)
+        step_metrics = rt.get("step_metrics")
+        if step_metrics is not None:
+            with torch.no_grad():
+                step_metrics.setdefault("resid_norm", {})[layer_idx] = x[0, -1, :].float().norm().item()
         return x
 
 class TinyTransformer(nn.Module):
@@ -362,7 +526,7 @@ class TinyTransformer(nn.Module):
             x = x + _sinusoidal_table(T, self.cfg.d_model, abs_offset, x.device, x.dtype).unsqueeze(0)
         for i, block in enumerate(self.blocks):
             cache = kv_caches[i] if kv_caches is not None else None
-            x = block(x, kv_cache=cache, runtime=rt)
+            x = block(x, kv_cache=cache, runtime=rt, layer_idx=i)
         x = self.final_norm(x) if enable_norms else x
         tied = rt.get("tie_embeddings", self.cfg.tie_embeddings)
         if tied or self.lm_head is None:
