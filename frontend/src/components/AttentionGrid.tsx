@@ -12,7 +12,7 @@ const LABEL_W = 110;
 const HEADER_H = 36;
 
 function escapeChar(c: string): string {
-  if (c === " ") return "·";
+  if (c === " ") return "␣";
   if (c === "\n") return "↵";
   if (c === "\t") return "→";
   if (c.charCodeAt(0) < 32) return "?";
@@ -42,23 +42,21 @@ export function AttentionGridModal() {
       <div class="modal attn-modal" onClick={(e) => e.stopPropagation()}>
         <div class="modal-head">
           <div>
-            <div class="meta">attention pattern{streaming && <span class="attn-live-tag">live</span>}</div>
-            <h3>Causal self-attention · {att}</h3>
-            <p class="short">
-              Each row is a query position. Cells lit in that row are the key positions the query can read.
-              A decoder-only LM uses a causal mask: position <code>i</code> sees positions <code>0..i</code>, never the future.
+            <h3>Causal self attention ({att})</h3>
+            <p class="panel-note">
+              Each row is a query position and lit cells are the keys it can read. Position i only sees positions 0 through i and never the future.
             </p>
           </div>
           <button class="close" onClick={() => (attnModalOpen.value = false)}>×</button>
         </div>
 
         <div class="attn-formula">
-          <code>Attention(Q, K, V) = softmax(Q·K<sup>ᵀ</sup> / √d<sub>h</sub> + M) · V</code>
-          <span>where M[i,j] = 0 if j ≤ i, −∞ otherwise. With {att}, the {cfg.n_heads} query heads share {cfg.n_kv_heads} K/V projection{cfg.n_kv_heads === 1 ? "" : "s"} per layer (head_dim = {cfg.head_dim}).</span>
+          <code>Attention(Q, K, V) = softmax(Q Kᵀ / √d_h + M) V</code>
+          <span>{cfg.n_heads} query heads share {cfg.n_kv_heads} K and V projection{cfg.n_kv_heads === 1 ? "" : "s"} per layer (head dim {cfg.head_dim}).</span>
         </div>
 
         {N === 0 ? (
-          <p class="empty">Run a prompt first. The grid renders the actual tokens once the stream starts.</p>
+          <p class="panel-note">Run a prompt first so the grid can render real generated positions.</p>
         ) : (
           <>
             <div class="attn-grid-wrap">
@@ -87,7 +85,7 @@ export function AttentionGridModal() {
                       style="cursor:pointer;"
                     >
                       <rect
-                        x={LABEL_W - LABEL_W + 4}
+                        x={4}
                         y={HEADER_H + i * CELL}
                         width={LABEL_W - 8 + gridW}
                         height={CELL - 1}
@@ -126,31 +124,20 @@ export function AttentionGridModal() {
             </div>
 
             <div class="attn-legend">
-              <span><span class="sw sw-self" /> Q = K (diagonal, self-attention)</span>
-              <span><span class="sw sw-allowed" /> attended (past or self)</span>
-              <span><span class="sw sw-masked" /> masked (future, set to −∞)</span>
-              {streaming && <span><span class="sw sw-live" /> currently generating</span>}
+              <span><span class="sw sw-self" /> Diagonal (self)</span>
+              <span><span class="sw sw-allowed" /> Attended past</span>
+              <span><span class="sw sw-masked" /> Masked future</span>
             </div>
 
             <div class="attn-readout">
               {focus === null ? (
-                <span class="attn-hint">
-                  {streaming
-                    ? `Streaming. Row ${activeRow} is the position the model is producing right now. Hover any row to see what that position attends to.`
-                    : "Hover any row to see what that position attends to."}
-                </span>
+                <span>Hover any row to inspect which past keys that position reads.</span>
               ) : (
                 <span>
-                  Position <code>{focus}</code> (token "<code>{escapeChar(labels[focus])}</code>") attends to{" "}
-                  <code>K[0..{focus}]</code> = "<code>{labels.slice(0, focus + 1).map(escapeChar).join("")}</code>"
-                  <span class="muted"> · {focus + 1} key{focus === 0 ? "" : "s"} visible, {Math.max(0, N - focus - 1)} masked</span>
+                  Position <code>{focus}</code> ({escapeChar(labels[focus])}) reads {focus + 1} visible keys and masks {Math.max(0, N - focus - 1)} future keys.
                 </span>
               )}
             </div>
-
-            {allLabels.length > MAX_VIEW && (
-              <p class="attn-truncate">Showing first {MAX_VIEW} of {allLabels.length} positions.</p>
-            )}
           </>
         )}
       </div>

@@ -4,6 +4,8 @@ export type NormKind = "layernorm" | "rmsnorm";
 export type FFNKind = "dense" | "moe";
 export type PosEmbedKind = "rope" | "alibi" | "absolute" | "sinusoidal" | "nope";
 export type ActivationKind = "silu" | "gelu" | "relu2";
+export type KVQuantKind = "none" | "int8" | "int4" | "int2";
+export type KVSinkMode = "normal" | "keep_sinks" | "drop_sinks";
 
 export interface ArchConfig {
   vocab_size: number;
@@ -26,6 +28,29 @@ export interface ArchConfig {
   enable_attention: boolean;
   enable_ffn: boolean;
   enable_norms: boolean;
+}
+
+export interface SurgeryConfig {
+  disabled_heads: Record<number, number[]>;
+  disabled_attn_layers: number[];
+  disabled_ffn_layers: number[];
+  disabled_norm_layers: number[];
+}
+
+export interface KVDegradationConfig {
+  quant: KVQuantKind;
+  window: number | null;
+  sink_mode: KVSinkMode;
+  sink_tokens: number;
+  drop_prob: number;
+}
+
+export interface TelemetryPoint {
+  ch: string;
+  lm: number;
+  ent: number;
+  rn: number;
+  s: number;
 }
 
 export interface CostPanel {
@@ -55,6 +80,39 @@ export interface GenerateRequest {
   temperature: number;
   top_k?: number;
   instrument?: boolean;
+  surgery?: SurgeryConfig;
+  kv?: KVDegradationConfig;
+}
+
+export interface TopProb {
+  ch: string;
+  p: number;
+}
+
+export interface RaceStep {
+  step: number;
+  a: string;
+  b: string;
+  diff: boolean;
+  lm_a: number;
+  lm_b: number;
+  ent_a: number;
+  ent_b: number;
+  top_a?: TopProb[];
+  top_b?: TopProb[];
+}
+
+export interface RaceRequest {
+  config_a: ArchConfig;
+  config_b: ArchConfig;
+  surgery_a?: SurgeryConfig;
+  surgery_b?: SurgeryConfig;
+  kv_a?: KVDegradationConfig;
+  kv_b?: KVDegradationConfig;
+  prompt: string;
+  max_tokens: number;
+  temperature: number;
+  top_k?: number;
 }
 
 export interface Instrumentation {
@@ -63,13 +121,16 @@ export interface Instrumentation {
   attention_instrumented: boolean;
   norms_active: boolean;
   n_layers: number;
+  n_heads: number;
   n_experts: number;
   top_k: number;
   routing_counts: number[][];
   routing_totals: number[];
   attn_entropy_mean: (number | null)[];
+  attn_logit_max_by_layer: (number | null)[];
   attn_max_entropy: number[];
   residual_norm_mean: (number | null)[];
+  head_activity: number[][];
   token_surprises: number[];
   token_strings: string[];
 }

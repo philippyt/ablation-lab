@@ -17,19 +17,24 @@ export function Presets() {
 
   return (
     <div class="presets-list">
-      <p class="preset-caption">Each preset applies the component choices of a real model (attention shape, norm, FFN, activation, positional scheme) to the lab's toy scale. The name refers to where the preset comes from. The trained model here is always tiny.</p>
-      {PRESETS.map((p) => {
-        const active = matches(cfg, p);
-        return (
-          <button
-            class={`preset ${active ? "preset-active" : ""}`}
-            onClick={() => apply(p)}
-          >
-            <span class="preset-name">{p.name}</span>
-            <span class="preset-family">{p.family}</span>
-          </button>
-        );
-      })}
+      <p class="panel-note">
+        Each preset applies the architectural choices of a real model to this lab toy scale so you can test and ablate them live.
+      </p>
+      <div class="presets-grid">
+        {PRESETS.map((p) => {
+          const active = matches(cfg, p);
+          return (
+            <button
+              key={p.id}
+              class={`preset ${active ? "preset-active" : ""}`}
+              onClick={() => apply(p)}
+            >
+              <span class="preset-name">{p.name}</span>
+              <span class="preset-family">{p.family}</span>
+            </button>
+          );
+        })}
+      </div>
     </div>
   );
 }

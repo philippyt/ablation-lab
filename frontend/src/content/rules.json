@@ -6,7 +6,7 @@
       "new_value_in": { "pos_embed": ["alibi", "sinusoidal", "nope"] },
       "old_value_in": { "pos_embed": ["rope", "alibi", "sinusoidal", "nope"] }
     },
-    "template": "pos_embed swapped from {old.pos_embed} to {new.pos_embed}. The trained checkpoint expects {old.pos_embed} positional info baked into Q and K. At inference the model is now seeing {new.pos_embed} instead, with the same trained weights underneath. This is a Kind-B intervention applied live (no retraining), so the output will degrade. The degradation is the architectural lesson, not a crash. Compare against the rope baseline at the same shape to see what those positional bits were actually doing for quality."
+    "template": "Position scheme swapped from {old.pos_embed} to {new.pos_embed}. The trained weights expect {old.pos_embed} baked into Q and K. Applying {new.pos_embed} live without retraining visibly degrades output."
   },
   {
     "id": "pos_embed_kindb_nope_abs",
@@ -15,7 +15,7 @@
       "new_value_in": { "pos_embed": ["nope"] },
       "old_value_in": { "pos_embed": ["absolute"] }
     },
-    "template": "pos_embed swapped from absolute to nope. The trained absolute position table is zeroed at inference. The model loses every positional cue it learned. Output degrades. The degradation is the lesson."
+    "template": "Position scheme swapped from absolute to nope. The learned position table is zeroed at inference, removing every positional cue the weights rely on."
   },
   {
     "id": "gqa_kv_reduction",
@@ -25,7 +25,7 @@
       "direction": "decrease",
       "min_relative_change": 0.1
     },
-    "template": "n_kv_heads went from {old.n_kv_heads} to {new.n_kv_heads}. KV cache at full context fell {pct} ({bytes.old} to {bytes.new}). Standard GQA shrinkage; each attention layer now stores {ratio}x less K and V."
+    "template": "KV heads dropped from {old.n_kv_heads} to {new.n_kv_heads}. Full context KV cache fell {pct} ({bytes.old} to {bytes.new}). Each layer stores {ratio}x less K and V."
   },
   {
     "id": "mha_kv_growth",
@@ -35,7 +35,7 @@
       "direction": "increase",
       "min_relative_change": 0.1
     },
-    "template": "n_kv_heads went from {old.n_kv_heads} to {new.n_kv_heads}. KV cache at full context grew {pct} ({bytes.old} to {bytes.new}). More heads cache independent K and V."
+    "template": "KV heads rose from {old.n_kv_heads} to {new.n_kv_heads}. Full context KV cache grew {pct} ({bytes.old} to {bytes.new}). More heads cache independent K and V."
   },
   {
     "id": "ffn_dense_to_moe",
@@ -44,7 +44,7 @@
       "metric": "total_params",
       "direction": "increase"
     },
-    "template": "FFN switched to MoE with {new.n_experts} experts, top-{new.top_k}. Total params increased {pct} ({params.old} to {params.new}); active params per token stayed near one expert's worth."
+    "template": "FFN switched to MoE with {new.n_experts} experts and top {new.top_k} routing. Total params increased {pct} ({params.old} to {params.new}) while active params per token stayed near one expert."
   },
   {
     "id": "ffn_moe_to_dense",
@@ -60,7 +60,7 @@
     "trigger": {
       "fields_changed": ["norm"]
     },
-    "template": "norm changed from {old.norm} to {new.norm}. Per-norm parameter count changes accordingly (LayerNorm has weight+bias, RMSNorm has weight only); the difference is {params.diff} across the full stack."
+    "template": "Norm changed from {old.norm} to {new.norm}. LayerNorm has weight and bias while RMSNorm has weight only, shifting total params by {params.diff}."
   },
   {
     "id": "pos_to_absolute",
@@ -69,7 +69,7 @@
       "metric": "total_params",
       "direction": "increase"
     },
-    "template": "pos_embed went to absolute. A learned position table of {pos_size} parameters was added to the embedding bank. Other position schemes (RoPE, ALiBi, NoPE) cost zero parameters."
+    "template": "Position scheme switched to absolute. A learned table of {pos_size} parameters was added to the embedding bank."
   },
   {
     "id": "pos_from_absolute",
@@ -78,7 +78,7 @@
       "metric": "total_params",
       "direction": "decrease"
     },
-    "template": "pos_embed left absolute. The {pos_size}-param position table is gone; new scheme stores no learned positional weights."
+    "template": "Position scheme left absolute. The {pos_size} parameter table is removed because the new scheme stores no positional weights."
   },
   {
     "id": "ctx_change",
@@ -87,7 +87,7 @@
       "metric": "kv_cache_full_ctx",
       "min_relative_change": 0.05
     },
-    "template": "ctx changed from {old.ctx} to {new.ctx}. KV cache at full context scales linearly: {bytes.old} to {bytes.new}."
+    "template": "Context length changed from {old.ctx} to {new.ctx}. Full context KV cache scales linearly from {bytes.old} to {bytes.new}."
   },
   {
     "id": "tie_to_untie",
@@ -95,21 +95,21 @@
       "fields_changed": ["tie_embeddings"],
       "metric": "total_params"
     },
-    "template": "tie_embeddings flipped from {old.tie_embeddings} to {new.tie_embeddings}. LM head and token embedding now {tied_state}; total params changed by {params.diff} (vocab_size·d_model = {head_size})."
+    "template": "Embedding tying flipped from {old.tie_embeddings} to {new.tie_embeddings}. LM head and token embedding are now {tied_state}, changing total params by {params.diff}."
   },
   {
     "id": "qk_norm_on",
     "trigger": {
       "fields_changed": ["qk_norm"]
     },
-    "template": "qk_norm went from {old.qk_norm} to {new.qk_norm}. Q/K normalization adds {qkn_size} parameters per attention block; stabilizes attention logits at large widths."
+    "template": "QK Norm changed from {old.qk_norm} to {new.qk_norm}. Per head Q and K normalization adds {qkn_size} parameters per block and bounds attention logits."
   },
   {
     "id": "mla_switch",
     "trigger": {
       "fields_changed": ["attention_type"]
     },
-    "template": "attention_type changed from {old.attention_type} to {new.attention_type}. KV per token is now {bytes.kv.new} (was {bytes.kv.old}). MLA caches a low-rank latent instead of full K and V."
+    "template": "Attention type changed from {old.attention_type} to {new.attention_type}. KV cache per token is now {bytes.kv.new} (was {bytes.kv.old}). MLA caches a low rank latent instead of full K and V."
   },
   {
     "id": "layers_change",
@@ -118,7 +118,7 @@
       "metric": "total_params",
       "min_relative_change": 0.05
     },
-    "template": "n_layers changed from {old.n_layers} to {new.n_layers}. Block params scale linearly: {params.old} to {params.new}. KV cache scales linearly too."
+    "template": "Layer count changed from {old.n_layers} to {new.n_layers}. Block params scaled linearly from {params.old} to {params.new}, and KV cache scaled linearly too."
   },
   {
     "id": "d_model_change",
@@ -126,27 +126,27 @@
       "fields_changed": ["d_model"],
       "metric": "total_params"
     },
-    "template": "d_model changed from {old.d_model} to {new.d_model}. Attention QKVO scales quadratically with d_model, FFN hidden scales linearly. Total params {params.old} to {params.new}."
+    "template": "Model width changed from {old.d_model} to {new.d_model}. Attention projections scale quadratically while total params moved from {params.old} to {params.new}."
   },
   {
     "id": "ablation_attn_off",
     "trigger": {
       "fields_changed": ["enable_attention"]
     },
-    "template": "enable_attention toggled to {new.enable_attention}. Attention sublayer params and KV cache zero out when disabled; the block becomes a pure FFN residual stack."
+    "template": "Attention sublayer set to {new.enable_attention}. Disabling attention zeros KV cache and turns each block into an FFN residual stack."
   },
   {
     "id": "ablation_ffn_off",
     "trigger": {
       "fields_changed": ["enable_ffn"]
     },
-    "template": "enable_ffn toggled to {new.enable_ffn}. FFN sublayer params zero out when disabled; the block becomes attention-only."
+    "template": "FFN sublayer set to {new.enable_ffn}. Disabling FFN turns each block into an attention only residual stack."
   },
   {
     "id": "ablation_norms_off",
     "trigger": {
       "fields_changed": ["enable_norms"]
     },
-    "template": "enable_norms toggled to {new.enable_norms}. All normalization layers zero out when disabled; activations are unscaled across the residual stream."
+    "template": "Norm layers set to {new.enable_norms}. Disabling norms leaves activations unscaled across the residual stream."
   }
 ]

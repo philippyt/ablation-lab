@@ -10,8 +10,8 @@ export interface Preset {
 export const PRESETS: Preset[] = [
   {
     id: "gpt2",
-    name: "GPT-2",
-    family: "OpenAI '19",
+    name: "GPT 2",
+    family: "OpenAI 2019",
     patch: {
       norm: "layernorm",
       pos_embed: "absolute",
@@ -26,7 +26,7 @@ export const PRESETS: Preset[] = [
   {
     id: "bloom",
     name: "BLOOM / MPT",
-    family: "BigScience '22",
+    family: "BigScience 2022",
     patch: {
       norm: "layernorm",
       pos_embed: "alibi",
@@ -41,7 +41,7 @@ export const PRESETS: Preset[] = [
   {
     id: "llama1",
     name: "Llama 1 7B",
-    family: "Meta '23",
+    family: "Meta 2023",
     patch: {
       norm: "rmsnorm",
       pos_embed: "rope",
@@ -56,7 +56,7 @@ export const PRESETS: Preset[] = [
   {
     id: "llama3",
     name: "Llama 3 8B",
-    family: "Meta '24",
+    family: "Meta 2024",
     patch: {
       norm: "rmsnorm",
       pos_embed: "rope",
@@ -71,7 +71,7 @@ export const PRESETS: Preset[] = [
   {
     id: "mixtral",
     name: "Mixtral 8x7B",
-    family: "Mistral '24",
+    family: "Mistral 2024",
     patch: {
       norm: "rmsnorm",
       pos_embed: "rope",
@@ -88,7 +88,7 @@ export const PRESETS: Preset[] = [
   {
     id: "gemma3",
     name: "Gemma 3 27B",
-    family: "Google '25",
+    family: "Google 2025",
     patch: {
       norm: "rmsnorm",
       pos_embed: "rope",
@@ -103,7 +103,7 @@ export const PRESETS: Preset[] = [
   {
     id: "qwen3",
     name: "Qwen3 8B",
-    family: "Alibaba '25",
+    family: "Alibaba 2025",
     patch: {
       norm: "rmsnorm",
       pos_embed: "rope",
@@ -117,8 +117,8 @@ export const PRESETS: Preset[] = [
   },
   {
     id: "qwen3_moe",
-    name: "Qwen3 235B-A22B",
-    family: "Alibaba '25",
+    name: "Qwen3 235B A22B",
+    family: "Alibaba 2025",
     patch: {
       norm: "rmsnorm",
       pos_embed: "rope",
@@ -134,8 +134,8 @@ export const PRESETS: Preset[] = [
   },
   {
     id: "gpt_oss",
-    name: "GPT-OSS 20B",
-    family: "OpenAI '25",
+    name: "GPT OSS 20B",
+    family: "OpenAI 2025",
     patch: {
       norm: "rmsnorm",
       pos_embed: "rope",
@@ -152,7 +152,7 @@ export const PRESETS: Preset[] = [
   {
     id: "llama4",
     name: "Llama 4 Maverick",
-    family: "Meta '25",
+    family: "Meta 2025",
     patch: {
       norm: "rmsnorm",
       pos_embed: "rope",
@@ -169,7 +169,7 @@ export const PRESETS: Preset[] = [
   {
     id: "deepseek_v32",
     name: "DeepSeek V3.2",
-    family: "DeepSeek '25",
+    family: "DeepSeek 2025",
     patch: {
       norm: "rmsnorm",
       pos_embed: "rope",
@@ -186,7 +186,7 @@ export const PRESETS: Preset[] = [
   {
     id: "mistral_large_3",
     name: "Mistral Large 3",
-    family: "Mistral '25",
+    family: "Mistral 2025",
     patch: {
       norm: "rmsnorm",
       pos_embed: "rope",
@@ -203,7 +203,7 @@ export const PRESETS: Preset[] = [
   {
     id: "kimi_k25",
     name: "Kimi K2.5",
-    family: "Moonshot '26",
+    family: "Moonshot 2026",
     patch: {
       norm: "rmsnorm",
       pos_embed: "rope",

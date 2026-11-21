@@ -15,39 +15,35 @@ export function WhatIsThisModal() {
   }, []);
 
   return (
-    <div class="modal-backdrop wit-backdrop" onClick={() => (whatIsThisOpen.value = false)}>
-      <div class="wit-modal" onClick={(e) => e.stopPropagation()}>
-        <button class="close wit-close" onClick={() => (whatIsThisOpen.value = false)} aria-label="close">×</button>
-        <h2>What is this?</h2>
-        <p class="wit-lead">
-          A playground for composing tiny transformer architectures and watching how the output breaks when you change them. Built for students, engineers new to transformers, and anyone who learns by poking at things.
-        </p>
+    <div class="modal-backdrop" onClick={() => (whatIsThisOpen.value = false)}>
+      <div class="modal wit-modal" onClick={(e) => e.stopPropagation()}>
+        <div class="modal-head">
+          <div>
+            <h2>About Ablation Lab</h2>
+            <p class="panel-note">
+              A live playground for composing tiny transformers, knocking out individual heads or layers, degrading KV caches, and racing twin models character by character.
+            </p>
+          </div>
+          <button class="close" onClick={() => (whatIsThisOpen.value = false)} aria-label="close">×</button>
+        </div>
 
-        <h3>What it does</h3>
-        <ul class="wit-list">
-          <li>Pick the attention paradigm (MHA, GQA, MQA, MLA), normalization (LayerNorm, RMSNorm), FFN shape (dense or MoE), activation, positional scheme, and ablation toggles.</li>
-          <li>See the exact parameter count, KV cache size, memory footprint, and decode tokens-per-second for the current architecture.</li>
-          <li>Load a real trained checkpoint that matches the architecture. Stream generated text back from it.</li>
-          <li>Turn attention or the FFN off at inference. Swap the positional scheme at inference. The trained weights stay the same. Output degrades visibly (points to you if you figure out why).</li>
-          <li>Export the current architecture as a paste-and-run PyTorch snippet.</li>
-        </ul>
+        <div class="wit-section">
+          <h3>What you can test</h3>
+          <ul class="wit-list">
+            <li><strong>Architecture presets</strong> Apply real model shapes like Llama 3, Qwen3, Mixtral, Gemma 3, and DeepSeek V3.2 at toy scale and inspect exact parameter and KV math.</li>
+            <li><strong>Layer and head surgery</strong> Click any cell in the layer by head matrix to zero out individual query heads, attention blocks, FFNs, or norms live during inference.</li>
+            <li><strong>KV cache degradation</strong> Quantize KV states down to INT2, shrink the sliding window, keep or drop attention sinks, or drop random cached keys.</li>
+            <li><strong>Twin Race</strong> Run two models in lockstep on the same prompt, pinpoint the exact character where they diverge, and compare their top 5 next token probabilities.</li>
+          </ul>
+        </div>
 
-        <h3>Scale</h3>
-        <ul class="wit-list">
-          <li>d_model 128, n_layers 4, ctx 256, char-level vocabulary.</li>
-          <li>Trained on roughly 1 MB of TinyStories.</li>
-          <li>169 separate trained checkpoints, one per distinct architecture in the lab's matrix.</li>
-        </ul>
-
-        <h3>What's in the UI</h3>
-        <ul class="wit-list">
-          <li><strong>Architecture diagram</strong>: the live block diagram of the current selection. Click any component box for its explainer.</li>
-          <li><strong>Component presets</strong>: one-click presets for real models (Llama 3, Mixtral, DeepSeek V3, Kimi K2.5, etc.) applied at the lab's toy scale.</li>
-          <li><strong>Components</strong>: per-axis pickers and ablation toggles.</li>
-          <li><strong>Cost</strong>: parameters, KV cache, memory, FFN hidden, decode roofline against a selected VRAM tier.</li>
-          <li><strong>Run</strong>: prompt, max tokens, temperature, real streamed output from the matching checkpoint.</li>
-          <li><strong>KV cache state</strong>: live cache fill, eviction count, equation breakdown of bytes-per-token, attention pattern viewer.</li>
-        </ul>
+        <div class="wit-section">
+          <h3>Scale</h3>
+          <ul class="wit-list">
+            <li>Model width 128, 4 layers, 8 heads, context 256, char level vocabulary of 72 characters.</li>
+            <li>169 separate checkpoints trained on roughly 1 MB of TinyStories so every architectural axis resolves to real weights.</li>
+          </ul>
+        </div>
       </div>
     </div>
   );

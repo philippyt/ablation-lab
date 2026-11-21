@@ -1,11 +1,17 @@
 import { signal, computed } from "@preact/signals";
-import type { ArchConfig, CostPanel, ManifestEntry, Instrumentation } from "./types";
-import { costPanel } from "./lib/costs";
+import type {
+  ArchConfig,
+  CostPanel,
+  ManifestEntry,
+  Instrumentation,
+  SurgeryConfig,
+  KVDegradationConfig,
+  TelemetryPoint,
+} from "./types";
+import { costPanel, kvCachePerToken } from "./lib/costs";
 import { archHash } from "./lib/hash";
 import { PRESETS, type Preset } from "./lib/presets";
 export { openExplainerId } from "./content";
-
-const DEFAULT_NAME = "Untitled";
 
 function configMatchesPreset(cfg: ArchConfig, p: Preset): boolean {
   for (const k in p.patch) {
@@ -21,7 +27,7 @@ export const defaultConfig: ArchConfig = {
   d_model: 128,
   n_layers: 4,
   n_heads: 8,
-  n_kv_heads: 8,
+  n_kv_heads: 2,
   head_dim: 16,
   ctx: 256,
   norm: "rmsnorm",
@@ -29,7 +35,7 @@ export const defaultConfig: ArchConfig = {
   ffn_mult: 4,
   n_experts: 4,
   top_k: 1,
-  tie_embeddings: true,
+  tie_embeddings: false,
   pos_embed: "rope",
   activation: "silu",
   qk_norm: true,
@@ -39,8 +45,28 @@ export const defaultConfig: ArchConfig = {
   enable_norms: true,
 };
 
+export function emptySurgery(): SurgeryConfig {
+  return {
+    disabled_heads: {},
+    disabled_attn_layers: [],
+    disabled_ffn_layers: [],
+    disabled_norm_layers: [],
+  };
+}
+
+export function defaultKV(): KVDegradationConfig {
+  return {
+    quant: "none",
+    window: null,
+    sink_mode: "normal",
+    sink_tokens: 4,
+    drop_prob: 0,
+  };
+}
+
+export const labMode = signal<"single" | "race">("single");
 export const config = signal<ArchConfig>({ ...defaultConfig });
-export const name = signal<string>(DEFAULT_NAME);
+export const name = signal<string>("Qwen3 8B");
 export const entries = signal<ManifestEntry[]>([]);
 export const previousCost = signal<CostPanel | null>(null);
 export const previousConfig = signal<ArchConfig | null>(null);
@@ -48,6 +74,82 @@ export const generating = signal<boolean>(false);
 export const lastError = signal<string | null>(null);
 export const lastConsequences = signal<Array<{ id: string; text: string }>>([]);
 export const instrumentation = signal<Instrumentation | null>(null);
+export const telemetry = signal<TelemetryPoint[]>([]);
+
+export const surgery = signal<SurgeryConfig>(emptySurgery());
+export const kvDegradation = signal<KVDegradationConfig>(defaultKV());
+
+export const raceConfigB = signal<ArchConfig>({
+  ...defaultConfig,
+  qk_norm: false,
+});
+export const raceNameB = signal<string>("Llama 3 8B");
+export const raceKvB = signal<KVDegradationConfig>(defaultKV());
+export const raceSurgeryB = signal<SurgeryConfig>(emptySurgery());
+
+export function toggleHead(layer: number, head: number): void {
+  const cur = surgery.value;
+  const list = cur.disabled_heads[layer] ? [...cur.disabled_heads[layer]] : [];
+  const idx = list.indexOf(head);
+  if (idx >= 0) list.splice(idx, 1);
+  else list.push(head);
+  const nextHeads = { ...cur.disabled_heads };
+  if (list.length === 0) delete nextHeads[layer];
+  else nextHeads[layer] = list.sort((a, b) => a - b);
+  surgery.value = { ...cur, disabled_heads: nextHeads };
+}
+
+export function toggleLayerPart(part: "attn" | "ffn" | "norm", layer: number): void {
+  const cur = surgery.value;
+  const key = part === "attn" ? "disabled_attn_layers" : part === "ffn" ? "disabled_ffn_layers" : "disabled_norm_layers";
+  const list = [...cur[key]];
+  const idx = list.indexOf(layer);
+  if (idx >= 0) list.splice(idx, 1);
+  else list.push(layer);
+  list.sort((a, b) => a - b);
+  surgery.value = { ...cur, [key]: list };
+}
+
+export function resetSurgery(): void {
+  surgery.value = emptySurgery();
+}
+
+export function resetKV(): void {
+  kvDegradation.value = defaultKV();
+}
+
+export function updateKV(patch: Partial<KVDegradationConfig>): void {
+  kvDegradation.value = { ...kvDegradation.value, ...patch };
+}
+
+export const surgicalCount = computed<number>(() => {
+  const s = surgery.value;
+  let n = s.disabled_attn_layers.length + s.disabled_ffn_layers.length + s.disabled_norm_layers.length;
+  for (const k in s.disabled_heads) n += s.disabled_heads[Number(k)].length;
+  return n;
+});
+
+export const kvDegradationActive = computed<boolean>(() => {
+  const k = kvDegradation.value;
+  return k.quant !== "none" || k.window !== null || k.sink_mode !== "normal" || k.drop_prob > 0;
+});
+
+export function kvBytesMultiplier(quant: KVDegradationConfig["quant"]): number {
+  if (quant === "int8") return 0.5;
+  if (quant === "int4") return 0.25;
+  if (quant === "int2") return 0.125;
+  return 1;
+}
+
+export const effectiveKvPerToken = computed<number>(() => {
+  const base = kvCachePerToken(config.value);
+  return Math.round(base * kvBytesMultiplier(kvDegradation.value.quant));
+});
+
+export const effectiveKvFullCtx = computed<number>(() => {
+  const cap = kvDegradation.value.window ? Math.min(config.value.ctx, kvDegradation.value.window) : config.value.ctx;
+  return effectiveKvPerToken.value * cap;
+});
 
 export interface CacheStateView {
   positions: number;
@@ -113,12 +215,11 @@ export interface Resolution {
   distance: number;
 }
 
-export const resolution = computed<Resolution>(() => {
-  const cfg = config.value;
-  const all = entries.value;
-  const h = currentHash.value;
-  const exact = all.find(e => e.hash === h) ?? null;
-  if (exact) return { state: "green", resolvedEntry: exact, differingFields: [], distance: 0 };
+export function resolveLocal(cfg: ArchConfig, all: ManifestEntry[], exactHash?: string): Resolution {
+  if (exactHash) {
+    const exact = all.find(e => e.hash === exactHash) ?? null;
+    if (exact) return { state: "green", resolvedEntry: exact, differingFields: [], distance: 0 };
+  }
   let best: ManifestEntry | null = null;
   let bestDiffs: string[] = [];
   let bestDist = Infinity;
@@ -130,24 +231,31 @@ export const resolution = computed<Resolution>(() => {
       bestDiffs = diffs;
     }
   }
+  if (best !== null && bestDist === 0) {
+    return { state: "green", resolvedEntry: best, differingFields: [], distance: 0 };
+  }
   if (best === null || bestDist > 2) {
     return { state: "red", resolvedEntry: null, differingFields: bestDiffs, distance: bestDist === Infinity ? -1 : bestDist };
   }
   return { state: "amber", resolvedEntry: best, differingFields: bestDiffs, distance: bestDist };
-});
+}
+
+export const resolution = computed<Resolution>(() => resolveLocal(config.value, entries.value, currentHash.value));
 
 export const kindBActive = computed<string[]>(() => {
   const c = config.value;
   const res = resolution.value;
   const a: string[] = [];
-  if (!c.enable_attention) a.push("enable_attention");
-  if (!c.enable_ffn) a.push("enable_ffn");
-  if (!c.enable_norms) a.push("enable_norms");
+  if (!c.enable_attention) a.push("Attention off");
+  if (!c.enable_ffn) a.push("FFN off");
+  if (!c.enable_norms) a.push("Norms off");
   if (res.resolvedEntry) {
     const trained = res.resolvedEntry.arch_config.pos_embed;
-    if (trained === "rope" && c.pos_embed !== "rope") a.push(`pos_embed=${c.pos_embed}`);
-    else if (trained === "absolute" && c.pos_embed === "nope") a.push("pos_embed=nope (abs zeroed)");
+    if (trained === "rope" && c.pos_embed !== "rope") a.push(`Position ${c.pos_embed}`);
+    else if (trained === "absolute" && c.pos_embed === "nope") a.push("Position zeroed");
   }
+  if (surgicalCount.value > 0) a.push(`${surgicalCount.value} surgical edits`);
+  if (kvDegradationActive.value) a.push("KV degraded");
   return a;
 });
 

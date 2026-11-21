@@ -27,12 +27,11 @@ export function PyTorchCodeModal() {
       <div class="modal pytorch-modal" onClick={(e) => e.stopPropagation()}>
         <div class="modal-head">
           <div>
-            <div class="meta">pytorch</div>
-            <h3>Architecture in code</h3>
-            <p class="short">Your configured architecture as a self-contained PyTorch script.</p>
+            <h3>Architecture in PyTorch</h3>
+            <p class="panel-note">Your configured architecture exported as a standalone PyTorch module.</p>
           </div>
           <div class="modal-actions">
-            <button class="ghost" onClick={copy}>{copied ? "copied" : "copy"}</button>
+            <button class="btn-outline" onClick={copy}>{copied ? "Copied" : "Copy"}</button>
             <button class="close" onClick={() => (codeModalOpen.value = false)}>×</button>
           </div>
         </div>
