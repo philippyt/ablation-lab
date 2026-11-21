@@ -1,5 +1,8 @@
 from __future__ import annotations
-import fcntl
+try:
+    import fcntl
+except ImportError:
+    fcntl = None  # type: ignore[assignment]
 import json
 import os
 import time
@@ -52,7 +55,8 @@ def update_entry_field(h: str, key: str, value: Any) -> None:
     _ensure_dirs()
     LOCK_PATH.touch(exist_ok=True)
     with LOCK_PATH.open("w") as lf:
-        fcntl.flock(lf.fileno(), fcntl.LOCK_EX)
+        if fcntl is not None:
+            fcntl.flock(lf.fileno(), fcntl.LOCK_EX)
         try:
             data = read_manifest()
             entries = data.get("entries", {})
@@ -65,7 +69,8 @@ def update_entry_field(h: str, key: str, value: Any) -> None:
                     json.dump(data, f, indent=2, sort_keys=True)
                 os.replace(tmp, MANIFEST_PATH)
         finally:
-            fcntl.flock(lf.fileno(), fcntl.LOCK_UN)
+            if fcntl is not None:
+                fcntl.flock(lf.fileno(), fcntl.LOCK_UN)
 
 def load_checkpoint(h: str, map_location: str | torch.device = "cpu") -> dict:
     path = checkpoint_path(h)
@@ -83,7 +88,8 @@ def _update_manifest(h: str, cfg: ArchConfig, val_loss: float, name: str | None,
     _ensure_dirs()
     LOCK_PATH.touch(exist_ok=True)
     with LOCK_PATH.open("w") as lf:
-        fcntl.flock(lf.fileno(), fcntl.LOCK_EX)
+        if fcntl is not None:
+            fcntl.flock(lf.fileno(), fcntl.LOCK_EX)
         try:
             data = read_manifest()
             entries = data.get("entries", {})
@@ -107,7 +113,8 @@ def _update_manifest(h: str, cfg: ArchConfig, val_loss: float, name: str | None,
                 json.dump(data, f, indent=2, sort_keys=True)
             os.replace(tmp, MANIFEST_PATH)
         finally:
-            fcntl.flock(lf.fileno(), fcntl.LOCK_UN)
+            if fcntl is not None:
+                fcntl.flock(lf.fileno(), fcntl.LOCK_UN)
 
 def find_entry_for_config(cfg: ArchConfig) -> dict | None:
     h = arch_hash(cfg)
