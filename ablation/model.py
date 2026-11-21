@@ -196,6 +196,8 @@ def _sdpa_with_metrics(
         step_metrics.setdefault("attn_logit_max", {})[layer_idx] = lmax
         step_metrics.setdefault("attn_entropy", {})[layer_idx] = ent
     attn_w = F.softmax(scores, dim=-1)
+    if step_metrics.get("capture_attn_weights"):
+        step_metrics.setdefault("attn_weights", {})[layer_idx] = attn_w[0].detach().float().cpu()
     return torch.matmul(attn_w, v)
 
 class Attention(nn.Module):
@@ -524,15 +526,32 @@ class TinyTransformer(nn.Module):
                 x = x + self.abs_pos[abs_offset:abs_offset + T].unsqueeze(0)
         elif self.cfg.pos_embed == "rope" and eff_pos == "sinusoidal":
             x = x + _sinusoidal_table(T, self.cfg.d_model, abs_offset, x.device, x.dtype).unsqueeze(0)
+        step_metrics = rt.get("step_metrics")
+        capture_lens = bool(step_metrics and step_metrics.get("capture_logit_lens"))
+        lens_states: list[tuple[str, torch.Tensor]] = []
+        if capture_lens:
+            lens_states.append(("Embed", x[:, -1:, :].detach()))
         for i, block in enumerate(self.blocks):
             cache = kv_caches[i] if kv_caches is not None else None
             x = block(x, kv_cache=cache, runtime=rt, layer_idx=i)
+            if capture_lens:
+                lens_states.append((f"L{i}", x[:, -1:, :].detach()))
         x = self.final_norm(x) if enable_norms else x
         tied = rt.get("tie_embeddings", self.cfg.tie_embeddings)
         if tied or self.lm_head is None:
             logits = x @ self.tok_embed.weight.t()
         else:
             logits = self.lm_head(x)
+        if capture_lens and step_metrics is not None:
+            lens_logits: list[tuple[str, torch.Tensor]] = []
+            for label, h_state in lens_states:
+                h_norm = self.final_norm(h_state) if enable_norms else h_state
+                if tied or self.lm_head is None:
+                    ll = h_norm @ self.tok_embed.weight.t()
+                else:
+                    ll = self.lm_head(h_norm)
+                lens_logits.append((label, ll[:, 0, :].detach().float().cpu()))
+            step_metrics["logit_lens"] = lens_logits
         loss = None
         if targets is not None:
             loss = F.cross_entropy(logits.reshape(-1, logits.size(-1)), targets.reshape(-1))

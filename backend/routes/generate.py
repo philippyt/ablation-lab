@@ -7,8 +7,8 @@ from sse_starlette.sse import EventSourceResponse
 
 from ablation.checkpoints import resolve_config
 from ablation.config import ArchConfig
-from backend.inference import stream_generate, stream_race
-from backend.schemas import GenerateIn, RaceIn
+from backend.inference import stream_generate, stream_race, inspect_sequence
+from backend.schemas import GenerateIn, RaceIn, InspectIn
 
 router = APIRouter()
 
@@ -102,4 +102,35 @@ async def post_race(req: RaceIn) -> EventSourceResponse:
     return EventSourceResponse(
         event_iter(),
         headers={"X-Accel-Buffering": "no", "Cache-Control": "no-cache"},
+    )
+
+
+@router.post("/api/inspect")
+def post_inspect(req: InspectIn) -> dict:
+    try:
+        cfg = ArchConfig(**req.config.model_dump())
+    except (ValueError, TypeError) as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
+    resolution = resolve_config(cfg)
+    if resolution["state"] == "red":
+        raise HTTPException(
+            status_code=404,
+            detail={
+                "error": "no_matching_checkpoint",
+                "message": "No trained checkpoint within 2 axes.",
+            },
+        )
+
+    surgery_dict = req.surgery.model_dump() if req.surgery else None
+    kv_dict = req.kv.model_dump() if req.kv else None
+    return inspect_sequence(
+        requested_config=cfg,
+        resolution=resolution,
+        text=req.text,
+        surgery=surgery_dict,
+        kv=kv_dict,
+        include_attn=req.include_attn,
+        include_logit_lens=req.include_logit_lens,
+        max_attn_tokens=req.max_attn_tokens,
     )

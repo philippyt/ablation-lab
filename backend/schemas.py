@@ -76,6 +76,15 @@ class RaceIn(BaseModel):
     temperature: float = Field(default=0.0, ge=0.0, le=2.0)
     top_k: Optional[int] = Field(default=None, ge=1, le=1024)
 
+class InspectIn(BaseModel):
+    config: ArchConfigIn
+    text: str
+    surgery: Optional[SurgeryIn] = None
+    kv: Optional[KVDegradationIn] = None
+    include_attn: bool = True
+    include_logit_lens: bool = True
+    max_attn_tokens: int = Field(default=32, ge=2, le=64)
+
 class CostRequest(BaseModel):
     config: ArchConfigIn
     dtype_bytes: int = 2

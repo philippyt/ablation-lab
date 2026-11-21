@@ -435,3 +435,80 @@ async def stream_race(
 
     elapsed = time.time() - t_start
     yield {"event": "race_done", **done_info, "elapsed_s": round(elapsed, 4)}
+
+
+def inspect_sequence(
+    *,
+    requested_config: ArchConfig,
+    resolution: dict,
+    text: str,
+    surgery: dict | None = None,
+    kv: dict | None = None,
+    include_attn: bool = True,
+    include_logit_lens: bool = True,
+    max_attn_tokens: int = 32,
+) -> dict:
+    h = resolution["hash"]
+    model, tokenizer, cfg, val_loss = load_for_hash(h)
+    device = next(model.parameters()).device
+    ids = tokenizer.encode(text) or [0]
+    ids = ids[-cfg.ctx:]
+    step_metrics: dict = {
+        "capture_attn_weights": include_attn,
+        "capture_logit_lens": include_logit_lens,
+    }
+    runtime = _build_runtime_overrides(requested_config, cfg, surgery=surgery, kv=kv)
+    runtime["step_metrics"] = step_metrics
+    idx = torch.tensor([ids], dtype=torch.long, device=device)
+    with torch.no_grad():
+        model.forward(idx, runtime=runtime)
+
+    out: dict = {
+        "hash": h,
+        "val_loss": val_loss,
+        "n_layers": cfg.n_layers,
+        "n_heads": cfg.n_heads,
+    }
+
+    if include_attn:
+        slice_len = min(len(ids), max_attn_tokens)
+        start = len(ids) - slice_len
+        out["tokens"] = [tokenizer.decode([t]) for t in ids[start:]]
+        raw_attn: dict[int, torch.Tensor] = step_metrics.get("attn_weights", {})
+        disabled_heads_map = (surgery or {}).get("disabled_heads", {}) if surgery else {}
+        disabled_attn_layers = set((surgery or {}).get("disabled_attn_layers", [])) if surgery else set()
+        attn_out: list[list[list[list[float]]]] = []
+        for l_idx in range(cfg.n_layers):
+            layer_off = (not requested_config.enable_attention) or (l_idx in disabled_attn_layers)
+            t_w = raw_attn.get(l_idx)
+            if layer_off or t_w is None:
+                zeros = [[[0.0] * slice_len for _ in range(slice_len)] for _ in range(cfg.n_heads)]
+                attn_out.append(zeros)
+            else:
+                sub = t_w[:, start:, start:]
+                off_h = set(disabled_heads_map.get(l_idx, disabled_heads_map.get(str(l_idx), [])))
+                layer_list: list[list[list[float]]] = []
+                for h_idx in range(cfg.n_heads):
+                    if h_idx in off_h:
+                        layer_list.append([[0.0] * slice_len for _ in range(slice_len)])
+                    else:
+                        layer_list.append([[round(float(v), 3) for v in row] for row in sub[h_idx].tolist()])
+                attn_out.append(layer_list)
+        out["attn_weights"] = attn_out
+
+    if include_logit_lens:
+        lens_raw = step_metrics.get("logit_lens", [])
+        stages = []
+        for label, logits_vec in lens_raw:
+            probs = F.softmax(logits_vec[0], dim=-1)
+            vals, top_ids = probs.topk(min(5, probs.size(-1)))
+            stages.append({
+                "stage": label,
+                "top": [
+                    {"ch": tokenizer.decode([int(i.item())]), "p": round(float(v.item()), 4)}
+                    for v, i in zip(vals, top_ids)
+                ],
+            })
+        out["logit_lens"] = stages
+
+    return out

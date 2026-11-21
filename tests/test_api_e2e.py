@@ -89,3 +89,27 @@ def test_generate_and_race_sse_e2e(tmp_path, monkeypatch):
     assert "event: race_step" in rbody
     assert '"top_a":' in rbody
     assert "event: race_done" in rbody
+
+    # 3. Inspect endpoint: real attention weights + logit lens
+    insp = client.post(
+        "/api/inspect",
+        json={
+            "config": arch_config_to_dict(cfg_a),
+            "text": "Once upon a time",
+            "surgery": {"disabled_heads": {"0": [1]}},
+            "include_attn": True,
+            "include_logit_lens": True,
+            "max_attn_tokens": 16,
+        },
+    )
+    assert insp.status_code == 200
+    data = insp.json()
+    assert len(data["tokens"]) == 16
+    assert len(data["attn_weights"]) == cfg_a.n_layers
+    assert len(data["attn_weights"][0]) == cfg_a.n_heads
+    # Disabled head 1 in layer 0 should be all zeros
+    assert all(v == 0.0 for row in data["attn_weights"][0][1] for v in row)
+    # Logit lens has Embed + each layer
+    assert len(data["logit_lens"]) == cfg_a.n_layers + 1
+    assert data["logit_lens"][0]["stage"] == "Embed"
+    assert len(data["logit_lens"][-1]["top"]) == 5
