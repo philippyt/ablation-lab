@@ -1,4 +1,4 @@
-import type { ArchConfig, ManifestEntry, GenerateRequest, RaceRequest, TopProb } from "./types";
+import type { ArchConfig, ManifestEntry, GenerateRequest, RaceRequest, TopProb, InspectRequest, InspectResponse } from "./types";
 
 export async function fetchEntries(): Promise<ManifestEntry[]> {
   const res = await fetch("/api/configs");
@@ -61,6 +61,19 @@ export function streamGenerate(req: GenerateRequest, signal?: AbortSignal): Asyn
 
 export function streamRace(req: RaceRequest, signal?: AbortSignal): AsyncGenerator<RaceEvent> {
   return streamSSE<RaceEvent>("/api/race", req, signal);
+}
+
+export async function fetchInspect(req: InspectRequest): Promise<InspectResponse> {
+  const res = await fetch("/api/inspect", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(req),
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({ detail: res.statusText }));
+    throw new Error(humanizeError(res.status, err));
+  }
+  return (await res.json()) as InspectResponse;
 }
 
 function humanizeError(status: number, err: any): string {

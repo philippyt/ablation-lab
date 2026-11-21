@@ -9,7 +9,15 @@ import {
   telemetry,
   surgery,
   kvDegradation,
+  lastRunText,
+  logitLens,
+  inspectTokenLogitLens,
+  updateConfig,
+  resetSurgery,
+  resetKV,
+  updateKV,
 } from "../state";
+import { PRESETS } from "../lib/presets";
 import { streamGenerate } from "../api";
 import { HINTS } from "../lib/labels";
 import { HelpHint } from "./HelpHint";
@@ -38,17 +46,46 @@ export function RunPanel() {
   const kbActive = kindBActive.value;
   const runnable = res.state !== "red";
   const pts = telemetry.value;
+  const activeLensStep = logitLens.value?.stepIndex ?? null;
 
   function stop() {
     aborterRef.current?.abort();
   }
 
+  function applyExperiment(kind: "qknorm_loop" | "no_norms" | "drop_sinks" | "int2_kv") {
+    const llama3 = PRESETS.find((p) => p.id === "llama3")!;
+    const qwen3 = PRESETS.find((p) => p.id === "qwen3")!;
+    resetSurgery();
+    resetKV();
+    if (kind === "qknorm_loop") {
+      updateConfig({ ...llama3.patch, enable_attention: true, enable_ffn: true, enable_norms: true }, llama3);
+      setMaxTokens(420);
+      setTemperature(0);
+    } else if (kind === "no_norms") {
+      updateConfig({ ...qwen3.patch, enable_attention: true, enable_ffn: true, enable_norms: false }, qwen3);
+      setMaxTokens(200);
+      setTemperature(0);
+    } else if (kind === "drop_sinks") {
+      updateConfig({ ...qwen3.patch, enable_attention: true, enable_ffn: true, enable_norms: true }, qwen3);
+      updateKV({ window: 48, sink_mode: "drop_sinks", sink_tokens: 4 });
+      setMaxTokens(260);
+      setTemperature(0);
+    } else {
+      updateConfig({ ...qwen3.patch, enable_attention: true, enable_ffn: true, enable_norms: true }, qwen3);
+      updateKV({ quant: "int2" });
+      setMaxTokens(260);
+      setTemperature(0);
+    }
+  }
+
   async function run() {
     setOutput(prompt);
+    lastRunText.value = prompt;
     setStatus("Streaming");
     setStatusIsErr(false);
     generating.value = true;
     instrumentation.value = null;
+    logitLens.value = null;
     telemetry.value = [];
     cacheState.value = { positions: 0, status: "streaming", prompt_tokens: 0 };
     attnLabels.value = Array.from(prompt);
@@ -83,6 +120,7 @@ export function RunPanel() {
           acc += ev.text;
           tokens += 1;
           setOutput(acc);
+          lastRunText.value = acc;
           attnLabels.value = [...attnLabels.value, ev.text];
           teleAcc.push({
             ch: ev.text,
@@ -170,6 +208,14 @@ export function RunPanel() {
         </label>
       </div>
 
+      <div class="exp-strip">
+        <span class="strip-label">Try this</span>
+        <button class="chip-btn" onClick={() => applyExperiment("qknorm_loop")}>QK Norm loop</button>
+        <button class="chip-btn" onClick={() => applyExperiment("no_norms")}>No norms blowup</button>
+        <button class="chip-btn" onClick={() => applyExperiment("drop_sinks")}>Drop 4 sinks</button>
+        <button class="chip-btn" onClick={() => applyExperiment("int2_kv")}>INT2 KV stress</button>
+      </div>
+
       <div class="run-controls">
         <input
           class="prompt-input"
@@ -210,25 +256,35 @@ export function RunPanel() {
 
       <div class={`run-meta ${statusIsErr ? "is-err" : ""}`}>
         <span>{status}</span>
-        <HelpHint text={HINTS.prompt} />
+        <span class="meta-tip">
+          {pts.length > 0 ? "Click any generated char for Logit Lens" : ""}
+          <HelpHint text={HINTS.prompt} />
+        </span>
       </div>
 
       <div class="output-box">
         {!output && pts.length === 0 ? (
           <span class="output-placeholder">Press Run to stream text from the trained TinyStories checkpoint.</span>
-        ) : showSurprise && pts.length > 0 ? (
+        ) : pts.length > 0 ? (
           <>
             <span class="prompt-echo">{prompt}</span>
-            {pts.map((p, i) => (
-              <span
-                key={i}
-                class="surp-ch"
-                style={{ background: surpriseBg(p.s, maxSurprise) }}
-                title={`Surprise ${p.s.toFixed(2)} nats, entropy ${p.ent.toFixed(2)} nats`}
-              >
-                {p.ch}
-              </span>
-            ))}
+            {pts.map((p, i) => {
+              const isSel = activeLensStep === i;
+              return (
+                <span
+                  key={i}
+                  class={`gen-ch ${isSel ? "is-lens-sel" : ""}`}
+                  style={showSurprise ? { background: surpriseBg(p.s, maxSurprise) } : undefined}
+                  onClick={() => {
+                    const prefix = prompt + pts.slice(0, i).map((x) => x.ch).join("");
+                    inspectTokenLogitLens(prefix, p.ch, i);
+                  }}
+                  title={`Click for Logit Lens (surprise ${p.s.toFixed(2)} nats, entropy ${p.ent.toFixed(2)} nats)`}
+                >
+                  {p.ch}
+                </span>
+              );
+            })}
           </>
         ) : (
           <>

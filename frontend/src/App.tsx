@@ -5,10 +5,12 @@ import {
   name,
   lastError,
   labMode,
+  labTab,
   surgicalCount,
   kvDegradationActive,
 } from "./state";
 import { loadContent } from "./content";
+import { buildShareUrl, restoreFromUrlHash } from "./lib/share";
 import { ConfigPicker } from "./components/ConfigPicker";
 import { Presets } from "./components/Presets";
 import { Diagram } from "./components/Diagram";
@@ -24,17 +26,31 @@ import { AttentionGridModal } from "./components/AttentionGrid";
 import { WhatIsThisModal, whatIsThisOpen } from "./components/WhatIsThisModal";
 
 export function App() {
-  const [labTab, setLabTab] = useState<"surgery" | "kv" | "internals">("surgery");
   const [sideTab, setSideTab] = useState<"build" | "presets" | "cost">("build");
+  const [copiedLink, setCopiedLink] = useState(false);
 
   useEffect(() => {
+    restoreFromUrlHash();
     fetchEntries()
       .then((es) => setEntries(es))
       .catch((e) => (lastError.value = e.message));
     loadContent().catch((e) => (lastError.value = e.message));
   }, []);
 
+  async function shareExperiment() {
+    const url = buildShareUrl();
+    window.history.replaceState(null, "", url);
+    try {
+      await navigator.clipboard.writeText(url);
+      setCopiedLink(true);
+      setTimeout(() => setCopiedLink(false), 1600);
+    } catch {
+      setCopiedLink(false);
+    }
+  }
+
   const mode = labMode.value;
+  const activeLabTab = labTab.value;
   const sCount = surgicalCount.value;
   const kvOn = kvDegradationActive.value;
 
@@ -62,6 +78,9 @@ export function App() {
         </div>
 
         <div class="topbar-actions">
+          <button class="btn-outline" onClick={shareExperiment}>
+            {copiedLink ? "Link copied" : "Share link"}
+          </button>
           <button class="btn-outline" onClick={() => (codeModalOpen.value = true)}>
             PyTorch code
           </button>
@@ -99,28 +118,28 @@ export function App() {
             <section class="card lab-card">
               <div class="tab-bar">
                 <button
-                  class={`tab-btn ${labTab === "surgery" ? "is-active" : ""}`}
-                  onClick={() => setLabTab("surgery")}
+                  class={`tab-btn ${activeLabTab === "surgery" ? "is-active" : ""}`}
+                  onClick={() => (labTab.value = "surgery")}
                 >
                   Surgery {sCount > 0 ? `(${sCount})` : ""}
                 </button>
                 <button
-                  class={`tab-btn ${labTab === "kv" ? "is-active" : ""}`}
-                  onClick={() => setLabTab("kv")}
+                  class={`tab-btn ${activeLabTab === "kv" ? "is-active" : ""}`}
+                  onClick={() => (labTab.value = "kv")}
                 >
                   KV Cache {kvOn ? "(mod)" : ""}
                 </button>
                 <button
-                  class={`tab-btn ${labTab === "internals" ? "is-active" : ""}`}
-                  onClick={() => setLabTab("internals")}
+                  class={`tab-btn ${activeLabTab === "internals" ? "is-active" : ""}`}
+                  onClick={() => (labTab.value = "internals")}
                 >
                   Internals
                 </button>
               </div>
               <div class="tab-body">
-                {labTab === "surgery" && <SurgeryPanel />}
-                {labTab === "kv" && <KVCacheState />}
-                {labTab === "internals" && <InstrumentationPanels />}
+                {activeLabTab === "surgery" && <SurgeryPanel />}
+                {activeLabTab === "kv" && <KVCacheState />}
+                {activeLabTab === "internals" && <InstrumentationPanels />}
               </div>
             </section>
           </div>

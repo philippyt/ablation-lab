@@ -7,7 +7,9 @@ import type {
   SurgeryConfig,
   KVDegradationConfig,
   TelemetryPoint,
+  LogitLensStage,
 } from "./types";
+import { fetchInspect } from "./api";
 import { costPanel, kvCachePerToken } from "./lib/costs";
 import { archHash } from "./lib/hash";
 import { PRESETS, type Preset } from "./lib/presets";
@@ -65,6 +67,47 @@ export function defaultKV(): KVDegradationConfig {
 }
 
 export const labMode = signal<"single" | "race">("single");
+export const labTab = signal<"surgery" | "kv" | "internals">("surgery");
+export const lastRunText = signal<string>("Once upon a time");
+export interface LogitLensView {
+  chosenChar: string;
+  stepIndex: number;
+  stages: LogitLensStage[];
+  loading: boolean;
+  error: string | null;
+}
+export const logitLens = signal<LogitLensView | null>(null);
+
+export async function inspectTokenLogitLens(prefix: string, chosenChar: string, stepIndex: number): Promise<void> {
+  labTab.value = "internals";
+  logitLens.value = { chosenChar, stepIndex, stages: [], loading: true, error: null };
+  try {
+    const res = await fetchInspect({
+      config: config.value,
+      text: prefix,
+      surgery: surgery.value,
+      kv: kvDegradation.value,
+      include_attn: false,
+      include_logit_lens: true,
+    });
+    logitLens.value = {
+      chosenChar,
+      stepIndex,
+      stages: res.logit_lens ?? [],
+      loading: false,
+      error: null,
+    };
+  } catch (e) {
+    logitLens.value = {
+      chosenChar,
+      stepIndex,
+      stages: [],
+      loading: false,
+      error: (e as Error).message,
+    };
+  }
+}
+
 export const config = signal<ArchConfig>({ ...defaultConfig });
 export const name = signal<string>("Qwen3 8B");
 export const entries = signal<ManifestEntry[]>([]);

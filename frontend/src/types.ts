@@ -115,6 +115,31 @@ export interface RaceRequest {
   top_k?: number;
 }
 
+export interface LogitLensStage {
+  stage: string;
+  top: TopProb[];
+}
+
+export interface InspectRequest {
+  config: ArchConfig;
+  text: string;
+  surgery?: SurgeryConfig;
+  kv?: KVDegradationConfig;
+  include_attn?: boolean;
+  include_logit_lens?: boolean;
+  max_attn_tokens?: number;
+}
+
+export interface InspectResponse {
+  hash: string;
+  val_loss: number;
+  n_layers: number;
+  n_heads: number;
+  tokens?: string[];
+  attn_weights?: number[][][][];
+  logit_lens?: LogitLensStage[];
+}
+
 export interface Instrumentation {
   moe_active: boolean;
   attention_active: boolean;

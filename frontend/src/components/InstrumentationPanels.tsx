@@ -1,4 +1,55 @@
-import { instrumentation, config } from "../state";
+import { instrumentation, config, logitLens } from "../state";
+
+function escapeVisible(ch: string): string {
+  if (ch === " ") return "space";
+  if (ch === "\n") return "newline";
+  if (ch === "\t") return "tab";
+  return ch;
+}
+
+function LogitLensCard() {
+  const lens = logitLens.value;
+  return (
+    <div class="internal-card lens-card">
+      <div class="internal-head">
+        <strong>Logit lens</strong>
+        <span class="internal-ref">
+          {lens
+            ? `Step ${lens.stepIndex} chose ${escapeVisible(lens.chosenChar)}`
+            : "Click any generated char"}
+        </span>
+      </div>
+      {!lens ? (
+        <p class="panel-note" style="margin-bottom:0;">
+          Click any generated character in the output box to project each layer residual stream directly into next token probabilities.
+        </p>
+      ) : lens.loading ? (
+        <p class="panel-note" style="margin-bottom:0;">Computing layer projections...</p>
+      ) : lens.error ? (
+        <p class="panel-note is-err" style="margin-bottom:0;">{lens.error}</p>
+      ) : (
+        <div class="lens-rows">
+          {lens.stages.map((st) => (
+            <div class="lens-row" key={st.stage}>
+              <span class="lb-tag">{st.stage}</span>
+              <div class="lens-pills">
+                {st.top.map((item, i) => {
+                  const hit = item.ch === lens.chosenChar;
+                  return (
+                    <span class={`lens-pill ${hit ? "is-hit" : ""}`} key={i}>
+                      <span class="lens-ch">{escapeVisible(item.ch)}</span>
+                      <span class="lens-p">{(item.p * 100).toFixed(0)}%</span>
+                    </span>
+                  );
+                })}
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
 
 function LayerBarChart({
   title,
@@ -50,11 +101,14 @@ export function InstrumentationPanels() {
 
   if (!data) {
     return (
-      <div class="internals-empty">
-        <strong>Layer diagnostics</strong>
-        <p class="panel-note">
-          Run inference to populate per layer attention entropy, peak attention logits, residual norms, and MoE expert routing.
-        </p>
+      <div class="internals-panel">
+        <LogitLensCard />
+        <div class="internal-card">
+          <strong>Layer diagnostics</strong>
+          <p class="panel-note" style="margin-top:0.35rem;margin-bottom:0;">
+            Run inference to populate per layer attention entropy, peak attention logits, residual norms, and MoE expert routing.
+          </p>
+        </div>
       </div>
     );
   }
@@ -63,6 +117,7 @@ export function InstrumentationPanels() {
 
   return (
     <div class="internals-panel">
+      <LogitLensCard />
       <LayerBarChart
         title="Peak attention logit"
         values={data.attn_logit_max_by_layer ?? []}

@@ -1794,3 +1794,104 @@ pre.code {
     border-top: 1px solid var(--border);
   }
 }
+
+/* Try this strip, clickable chars, Logit Lens, and real Attention Heatmap toolbar */
+.exp-strip {
+  display: flex;
+  align-items: center;
+  gap: 0.38rem;
+  flex-wrap: wrap;
+}
+
+.meta-tip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--accent);
+}
+
+.gen-ch {
+  border-radius: 2px;
+  cursor: pointer;
+}
+
+.gen-ch:hover {
+  background: var(--accent-bg) !important;
+  outline: 1px solid var(--accent);
+}
+
+.gen-ch.is-lens-sel {
+  background: #fde047 !important;
+  color: #111318;
+  font-weight: 700;
+  outline: 1.5px solid #111318;
+}
+
+.lens-rows {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.lens-row {
+  display: grid;
+  grid-template-columns: 44px minmax(0, 1fr);
+  gap: 0.4rem;
+  align-items: center;
+}
+
+.lens-pills {
+  display: flex;
+  gap: 4px;
+  flex-wrap: wrap;
+}
+
+.lens-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 0.14rem 0.42rem;
+  border-radius: 5px;
+  background: var(--surface);
+  border: 1px solid var(--border-strong);
+  font-family: var(--mono);
+  font-size: 0.72rem;
+}
+
+.lens-pill.is-hit {
+  background: var(--good-bg);
+  border-color: var(--good);
+  color: var(--good);
+  font-weight: 700;
+}
+
+.lens-ch {
+  font-weight: 600;
+}
+
+.lens-p {
+  font-weight: 500;
+}
+
+.attn-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  margin-bottom: 0.75rem;
+  align-items: flex-end;
+}
+
+.attn-picker-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.attn-top-keys {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  flex-wrap: wrap;
+}
